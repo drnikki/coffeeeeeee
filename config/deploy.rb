@@ -1,25 +1,40 @@
-set :application, "set your application name here"
-set :repository,  "set your repository location here"
+# multi-stage
+set :stages, %w(dev qa prod)
+set :default_stage, "dev" # stay safe!
+require 'capistrano/ext/multistage'
 
-# set :scm, :git # You can set :scm explicitly or Capistrano will make an intelligent guess based on known version control directory names
-# Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
+# bundler, bitches, bundler
+require "bundler/capistrano"
 
-role :web, "your web-server here"                          # Your HTTP server, Apache/etc
-role :app, "your app-server here"                          # This may be the same as your `Web` server
-role :db,  "your primary db-server here", :primary => true # This is where Rails migrations will run
-role :db,  "your slave db-server here"
+# global application variables
+set :application, "coffeeeeeee eeeeeee eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+set :repository,  "git@github.com:drnikki/coffeeeeeee.git"
+set :scm, :git # You can set :scm explicitly or Capistrano will make an intelligent guess based on known version control directory names
+set :deploy_to, "/var/www/coffee/"
 
-# if you want to clean up old releases on each deploy uncomment this:
-# after "deploy:restart", "deploy:cleanup"
+# /var/www/coffee/builds/current is where the apache config is pointing
 
-# if you're still using the script/reaper helper you will need
-# these http://github.com/rails/irs_process_scripts
+# global config variables 
+default_run_options[:pty] = true	#for the 'no ttyp present and no askpass program error'
+logger.level = Logger::MAX_LEVEL
 
-# If you are using Passenger mod_rails uncomment this:
-# namespace :deploy do
-#   task :start do ; end
-#   task :stop do ; end
-#   task :restart, :roles => :app, :except => { :no_release => true } do
-#     run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}"
-#   end
-# end
+set  :keep_releases,  1
+set :git_shallow_clone, 1
+
+# uh, this makes more sense
+# these could change per environment.
+set :shared_dir,       "/var/www"
+set :tomcat_dest,      "/var/lib/tomcat7/webapps"
+set :webroot,          "/var/www/html"
+
+# so that we can use a tag instead of a branch
+#http://spin.atomicobject.com/2012/08/13/deploying-from-git-with-capistrano/
+if exists?(:tag)
+  set :branch, tag
+else 
+  set :branch, 'master'
+  set :tag, 'master' 
+end 
+
+# keeping a clean house.
+after "deploy:restart", "deploy:cleanup"
