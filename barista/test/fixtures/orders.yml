@@ -1,0 +1,41 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  item: Cappuccino
+  placed: 2013-01-06 16:01:39
+  fulfilled: 2013-01-08 16:03:39
+
+two:
+  item: Coffee
+  placed: 2013-01-08 16:01:39
+  fulfilled: 2013-01-08 16:04:39
+
+three:
+  item: Coffee
+  placed: 2013-01-08 16:01:39
+  fulfilled: 2013-01-08 16:04:39
+
+four:
+  item: Coffee
+  placed: 2013-01-08 16:01:39
+  fulfilled: 2013-01-08 16:04:39
+
+five:
+  item: Coffee
+  placed: 2013-01-07 16:01:39
+  fulfilled: 2013-01-07 16:04:39
+
+six:
+  item: Coffee
+  placed: 2013-01-07 14:01:39
+  fulfilled: 2013-01-07 14:04:39
+
+seven:
+  item: Coffee
+  placed: 2013-01-07 14:01:39
+  fulfilled: 2013-01-07 16:04:39
+
+eight:
+  item: Coffee
+  placed: 2013-01-07 16:01:39
+  fulfilled: 2013-01-07 16:04:39
