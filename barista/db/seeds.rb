@@ -5,3 +5,13 @@
 #
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
+
+# store variables
+StoreConfig.create(name:  'status', value: "closed")
+StoreConfig.create(name: 'milks', value: 'regular, soy, skim')
+
+# menu items
+MenuItem.create(name: 'capuccino', description: 'A normal, regular milk cappuccino')
+MenuItem.create(name: 'coffee', description: 'A normal, regular milk coffee')
+MenuItem.create(name: 'latte', description: 'A normal, regular milk latte')
+MenuItem.create(name: 'macchiato', description: 'A normal, regular milk macchiato')

@@ -11,15 +11,23 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130109183446) do
+ActiveRecord::Schema.define(:version => 20130109202624) do
+
+  create_table "menu_items", :force => true do |t|
+    t.string   "name"
+    t.string   "description"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
 
   create_table "orders", :force => true do |t|
     t.string   "item"
     t.datetime "placed"
     t.datetime "fulfilled"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.datetime "created_at",           :null => false
+    t.datetime "updated_at",           :null => false
     t.integer  "person_id"
+    t.text     "special_instructions"
   end
 
   create_table "store_configs", :force => true do |t|

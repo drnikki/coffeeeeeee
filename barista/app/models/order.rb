@@ -1,5 +1,5 @@
 class Order < ActiveRecord::Base
-  attr_accessible :fulfilled, :item, :placed, :person_id
+  attr_accessible :fulfilled, :item, :placed, :person_id, :special_instructions
 
   # so that on creation, it hasn't be fulfilled yet and it was ordered now
   before_create :set_order_times
