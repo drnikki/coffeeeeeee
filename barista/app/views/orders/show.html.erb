@@ -15,6 +15,16 @@
   <%= @order.fulfilled %>
 </p>
 
+<p>
+  <b>Person:</b>
+  <%= @order.person_id %>
+</p>
+
+<p>
+  <b>Special Instructions:</b>
+  <%= @order.special_instructions %>
+</p>
+
 
 <%= link_to 'Edit', edit_order_path(@order) %> |
 <%= link_to 'Back', orders_path %>

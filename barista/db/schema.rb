@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130109202624) do
+ActiveRecord::Schema.define(:version => 20130109205259) do
 
   create_table "menu_items", :force => true do |t|
     t.string   "name"
@@ -26,7 +26,7 @@ ActiveRecord::Schema.define(:version => 20130109202624) do
     t.datetime "fulfilled"
     t.datetime "created_at",           :null => false
     t.datetime "updated_at",           :null => false
-    t.integer  "person_id"
+    t.string   "person_id"
     t.text     "special_instructions"
   end
 

@@ -23,6 +23,16 @@
     <%= f.label :fulfilled %><br />
     <%= f.datetime_select :fulfilled %>
   </div>
+
+  <div class="field">
+    <%= f.label :person_id %><br />
+    <%= f.text_field :person_id %>
+  </div>
+
+    <div class="field">
+    <%= f.label :special_instructions %><br />
+    <%= f.text_field :special_instructions%>
+  </div>
   <div class="actions">
     <%= f.submit %>
   </div>

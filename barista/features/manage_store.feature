@@ -3,6 +3,7 @@ Feature: Manage The Store
   A barista
   Should be able to configure store settings
 
+  # if one 'normal' setting works, the rest likely will as well.
   Scenario: Open the store
     Given the store is closed
     When I go to store settings page
