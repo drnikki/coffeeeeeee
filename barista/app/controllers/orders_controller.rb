@@ -80,4 +80,17 @@ class OrdersController < ApplicationController
       format.json { head :no_content }
     end
   end
+
+  # GET /queue
+  # GET /queue.json
+  def queue
+    @orders = Order.where(:fulfilled => nil)
+
+    respond_to do |format|
+      format.html # index.html.erb
+      format.json { render json: @orders }
+    end
+
+
+  end
 end

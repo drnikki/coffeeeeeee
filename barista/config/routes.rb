@@ -6,6 +6,10 @@ Barista::Application.routes.draw do
 
   root :to => 'orders#index'
 
+  # for the queue-view
+  match 'queue' => 'orders#queue'
+
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

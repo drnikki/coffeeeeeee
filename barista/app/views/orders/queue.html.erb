@@ -1,0 +1,27 @@
+<h1>Listing Open Orders</h1>
+
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Placed</th>
+    <th>Fulfilled</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @orders.each do |order| %>
+  <tr>
+    <td><%= order.item %></td>
+    <td><%= order.placed %></td>
+    <td><%= order.fulfilled %></td>
+    <td><%= link_to 'Show', order %></td>
+    <td><%= link_to 'Edit', edit_order_path(order) %></td>
+    <td><%= link_to 'Destroy', order, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Order', new_order_path %>
