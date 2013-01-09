@@ -1,0 +1,2 @@
+module StoreConfigsHelper
+end

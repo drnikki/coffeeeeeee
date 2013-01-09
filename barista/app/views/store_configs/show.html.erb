@@ -1,0 +1,15 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @store_config.name %>
+</p>
+
+<p>
+  <b>Value:</b>
+  <%= @store_config.value %>
+</p>
+
+
+<%= link_to 'Edit', edit_store_config_path(@store_config) %> |
+<%= link_to 'Back', store_configs_path %>

@@ -1,5 +1,5 @@
 Barista::Application.routes.draw do
-  resources :stores
+  resources :store_configs
 
 
   resources :orders
