@@ -2,7 +2,7 @@ Given /^the store is closed$/ do
   StoreConfig.find_or_create_by_name('status').update_attributes(:value => 'closed')
 end
 
-When /^I go to store settings page$/ do
+When /^I go to store listing page$/ do
   visit ('/store_configs')
 end
 
