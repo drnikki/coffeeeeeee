@@ -92,16 +92,4 @@ class OrdersController < ApplicationController
     end
   end
 
-  # super helper for completing an order.
-  # GET /orders/1/complete
-  # GET /orders/1/complete.json
-  def complete
-    @orders = Order.where(:fulfilled => nil)
-
-    respond_to do |format|
-      format.html # index.html.erb
-      format.json { render json: @orders }
-    end
-  end
-
 end

@@ -10,8 +10,8 @@ class StoreConfigsController < ApplicationController
     end
   end
 
-  # GET /store_configs/1
-  # GET /store_configs/1.json
+  # GET /store_configs/[name]
+  # GET /store_configs/[name].json
   def show
     @store_config = StoreConfig.find(params[:id])
 

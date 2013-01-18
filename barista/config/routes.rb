@@ -3,6 +3,8 @@ Barista::Application.routes.draw do
 
   resources :orders
 
+  resources :menu_items
+
   root :to => 'orders#index'
 
   # for the queue-view

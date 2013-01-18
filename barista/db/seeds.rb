@@ -17,7 +17,6 @@ StoreConfig.create(name: 'busy_until', value: '') # this is a timestamp.
 StoreConfig.create(name: 'avg_wait_time', value: 4) # in minutes.
 
 # menu items
-# @todo - does it keep re-importing these?
 MenuItem.create(name: 'capuccino', description: 'A normal, regular milk cappuccino')
 MenuItem.create(name: 'coffee', description: 'A normal, regular milk coffee')
 MenuItem.create(name: 'latte', description: 'A normal, regular milk latte')
