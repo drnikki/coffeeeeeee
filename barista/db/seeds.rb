@@ -6,11 +6,18 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
-# store variables
-StoreConfig.create(name:  'status', value: "closed")
-StoreConfig.create(name: 'milks', value: 'regular, soy, skim')
+# store-wide variables
+StoreConfig.create(name:  'status', value: "closed") # closed, open, break 
+StoreConfig.create(name: 'milks', value: 'regular, soy, skim') # not sure about this one...
+
+# state of now variables
+StoreConfig.create(name: 'busy_until', value: '') # this is a timestamp.
+
+# stats we can calculate once a whenever
+StoreConfig.create(name: 'avg_wait_time', value: 4) # in minutes.
 
 # menu items
+# @todo - does it keep re-importing these?
 MenuItem.create(name: 'capuccino', description: 'A normal, regular milk cappuccino')
 MenuItem.create(name: 'coffee', description: 'A normal, regular milk coffee')
 MenuItem.create(name: 'latte', description: 'A normal, regular milk latte')

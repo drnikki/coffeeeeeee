@@ -1,7 +1,6 @@
 Barista::Application.routes.draw do
   resources :store_configs
 
-
   resources :orders
 
   root :to => 'orders#index'
