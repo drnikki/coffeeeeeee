@@ -81,6 +81,26 @@ class OrdersController < ApplicationController
     end
   end
 
+  # helper for fulfilling an order
+  # GET /orders/1/complete.json
+  def complete
+    @order = Order.find(params[:id])
+    @order.update_attributes(:fulfilled => Time.now)
+
+    respond_to do |format|
+      if @order.update_attributes(:fulfilled => Time.now)
+        format.html { redirect_to @order, notice: 'Order was successfully completed.' }
+        format.json { render json: @order, status: :updated }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @order.errors, status: :unprocessable_entity }
+      end
+    end
+
+  end
+
+
+
   # GET /queue
   # GET /queue.json
   def queue

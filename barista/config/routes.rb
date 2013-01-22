@@ -10,7 +10,8 @@ Barista::Application.routes.draw do
   # for the queue-view
   match 'queue' => 'orders#queue'
 
-
+  match 'orders/:id/complete' => 'orders#complete'
+  
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
