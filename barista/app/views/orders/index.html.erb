@@ -19,8 +19,8 @@
     <td><%= order.special_instructions %></td>
     <td><%= link_to 'Show', order %></td>
     <td><%= link_to 'Edit', edit_order_path(order) %></td>
-    <td><%= link_to 'Complete Order', edit_order_path(order) %></td>
-    <!-- <td><%= link_to 'Destroy', order, method: :delete, data: { confirm: 'Are you sure?' } %></td> -->
+    <td><%= link_to 'Complete', complete_order_path(order) %></td>
+    <td><%= link_to 'Destroy', order, method: :delete, data: { confirm: 'Are you sure?' } %></td>
   </tr>
 <% end %>
 </table>
