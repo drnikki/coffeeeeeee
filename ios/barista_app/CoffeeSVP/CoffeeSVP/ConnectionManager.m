@@ -1,0 +1,143 @@
+//
+//  ConnectionManager.m
+//  CoffeeSVP
+//
+//  Created by bmaci on 1/17/13.
+//  Copyright (c) 2013 bmaci. All rights reserved.
+//
+
+#import "ConnectionManager.h"
+#import "JSONKit.h"
+#import "Order.h"
+
+@implementation ConnectionManager
+
++ (ConnectionManager *)shareInstance
+{
+    static ConnectionManager *sharedSingleton;
+    
+    @synchronized(self)
+    {
+        if (!sharedSingleton)
+        {
+            sharedSingleton = [[ConnectionManager alloc] init];
+            
+            sharedSingleton.orderQueue = [[NSMutableArray alloc] init];
+        }
+        return sharedSingleton;
+    }
+}
+
++ (void)getMenu
+{
+    NSLog(@"getMenu");
+}
+
++ (void)getQueue
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
+    {
+        NSString *urlAddress = [NSString stringWithFormat:@"%@/%@.json", dataServiceBase, queueUrl];
+        NSURL *url = [NSURL URLWithString:urlAddress];
+        NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+        NSURLResponse *response;
+        NSError *err;
+        NSData *jsonData = [NSURLConnection sendSynchronousRequest:requestObj returningResponse:&response error:&err];
+        JSONDecoder *decoder = [JSONDecoder decoderWithParseOptions:JKParseOptionStrict];
+        NSData *jsonList = [jsonData copy];
+        
+        
+        NSMutableArray *orders = [decoder objectWithData:jsonList error:nil];
+        
+        NSLog(@"Orders: %@", orders);
+        
+        int i;
+        
+        for( i = 0; i < [orders count]; i++ )
+        {
+            Order *o = [[Order alloc] init];
+            
+            [o setOrderID:(NSString *)[[orders objectAtIndex:i] objectForKey:@"id"]];
+            [o setCreatedAt:(NSDate *)[[orders objectAtIndex:i] objectForKey:@"created_at"]];
+            [o setPlacedAt:(NSDate *)[[orders objectAtIndex:i] objectForKey:@"placed"]];
+            [o setUpdatedAt:(NSDate *)[[orders objectAtIndex:i] objectForKey:@"updated_at"]];
+            [o setFulfilledAt:(NSDate *)[[orders objectAtIndex:i] objectForKey:@"fulfilled"]];
+            [o setPersonID:(NSString *)[[orders objectAtIndex:i] objectForKey:@"person_id"]];
+            [o setOrderItem:(NSString *)[[orders objectAtIndex:i] objectForKey:@"item"]];
+            [o setPersonID:(NSString *)[[orders objectAtIndex:i] objectForKey:@"person_id"]];
+            [o setSpecialInstructions:(NSString *)[[orders objectAtIndex:i] objectForKey:@"special_instructions"]];
+            
+            [[ConnectionManager shareInstance].orderQueue addObject:o];
+            
+        }
+            
+        dispatch_async(dispatch_get_main_queue(), ^
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"OrderQueueLoaded" object:nil userInfo:nil];
+        });
+    });
+}
+
++ (void)updateStoreStatus:(NSString *)withStatus
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
+    {
+        NSString *jsonRequest = [NSString stringWithFormat:@"{\"name\":\"status\",\"value\":\"%@\"}",withStatus];
+        NSLog(@"Request: %@", jsonRequest);
+    
+        NSString *urlAddress = [NSString stringWithFormat:@"%@/%@.json", dataServiceBase, storeConfigsUrl];
+        NSURL *url = [NSURL URLWithString:urlAddress];
+    
+        NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
+        NSData *requestData = [NSData dataWithBytes:[jsonRequest UTF8String] length:[jsonRequest length]];
+        NSURLResponse *response;
+        NSError *err;
+        
+        [request setHTTPMethod:@"POST"];
+        [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        [request setValue:[NSString stringWithFormat:@"%d", [requestData length]] forHTTPHeaderField:@"Content-Length"];
+        [request setHTTPBody: requestData];
+    
+        //NSURLConnection *connection = [NSURLConnection connectionWithRequest:request delegate:self];
+        
+        NSData *jsonData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&err];
+        JSONDecoder *decoder = [JSONDecoder decoderWithParseOptions:JKParseOptionStrict];
+        NSData *jsonList = [jsonData copy];
+        
+        NSDictionary *newStatus = [decoder objectWithData:jsonList error:nil];
+        
+        NSLog(@"Status: %@", newStatus);
+        
+        dispatch_async(dispatch_get_main_queue(), ^
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"StatusUpdated" object:nil userInfo:newStatus];
+        });
+    });
+}
+
++ (void)completeOrder:(NSString *)withID
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
+    {
+        NSString *urlAddress = [NSString stringWithFormat:@"%@/%@/%@/complete.json", dataServiceBase, ordersUrl, withID];
+        NSURL *url = [NSURL URLWithString:urlAddress];
+        NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+        NSURLResponse *response;
+        NSError *err;
+        NSData *jsonData = [NSURLConnection sendSynchronousRequest:requestObj returningResponse:&response error:&err];
+        JSONDecoder *decoder = [JSONDecoder decoderWithParseOptions:JKParseOptionStrict];
+        NSData *jsonList = [jsonData copy];
+        
+        NSDictionary *returnedData = [decoder objectWithData:jsonList error:nil];
+        
+        NSLog(@"Order status? %@", returnedData);
+                       
+        dispatch_async(dispatch_get_main_queue(), ^
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"OrderFulfilled" object:nil userInfo:returnedData];
+        });
+    });
+}
+
+@end
