@@ -8,19 +8,15 @@
 
 #import "AppDelegate.h"
 #import "IntroViewController.h"
-#import "BaristaStatusViewController.h"
 
 @implementation AppDelegate
 
 @synthesize window = _window;
 @synthesize introViewController = _introViewController;
-@synthesize baristaStatusViewController = _baristaStatusViewController;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
-    
-    //[self showIntroViewController];
     
     return YES;
 }
@@ -32,19 +28,7 @@
     [self.window addSubview:self.introViewController.view];
 }
 
-- (void)showStatusViewController {
-    NSLog(@"Show status view");
-    
-    UIStoryboard* mainStoryboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
-    self.baristaStatusViewController = [mainStoryboard instantiateViewControllerWithIdentifier:@"baristaStatusView"];
-    CGRect newSize = CGRectMake( 0.0f, 200.0f, 768.0f, 50.0f);
-    //BaristaStatusViewController *ssvc = [[StoreStatusViewController alloc] initWithNibName:@"StoreStatusViewController" bundle:nil];
-    
-    self.baristaStatusViewController.view.frame = newSize;
-    self.baristaStatusViewController.view.backgroundColor = [UIColor clearColor];
-    [self.window addSubview:self.baristaStatusViewController.view];
-}
-							
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -55,6 +39,9 @@
 {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    
+    NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
+    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
@@ -66,7 +53,6 @@
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     
-    [self showStatusViewController];
     [self showIntroViewController];
 }
 

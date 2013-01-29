@@ -23,6 +23,8 @@
             sharedSingleton = [[ConnectionManager alloc] init];
             
             sharedSingleton.orderQueue = [[NSMutableArray alloc] init];
+            
+            sharedSingleton.queueHasLoaded = NO;
         }
         return sharedSingleton;
     }
@@ -49,7 +51,9 @@
         
         NSMutableArray *orders = [decoder objectWithData:jsonList error:nil];
         
-        NSLog(@"Orders: %@", orders);
+        //NSLog(@"Orders: %@", orders);
+        
+        [[ConnectionManager shareInstance].orderQueue removeAllObjects];
         
         int i;
         
@@ -64,7 +68,6 @@
             [o setFulfilledAt:(NSDate *)[[orders objectAtIndex:i] objectForKey:@"fulfilled"]];
             [o setPersonID:(NSString *)[[orders objectAtIndex:i] objectForKey:@"person_id"]];
             [o setOrderItem:(NSString *)[[orders objectAtIndex:i] objectForKey:@"item"]];
-            [o setPersonID:(NSString *)[[orders objectAtIndex:i] objectForKey:@"person_id"]];
             [o setSpecialInstructions:(NSString *)[[orders objectAtIndex:i] objectForKey:@"special_instructions"]];
             
             [[ConnectionManager shareInstance].orderQueue addObject:o];
@@ -138,6 +141,33 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:@"OrderFulfilled" object:nil userInfo:returnedData];
         });
     });
+}
+
+
++ (void)flagOrder:(NSString *)withID
+{
+    /*dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
+                   {
+                       NSString *urlAddress = [NSString stringWithFormat:@"%@/%@/%@/complete.json", dataServiceBase, ordersUrl, withID];
+                       NSURL *url = [NSURL URLWithString:urlAddress];
+                       NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+                       NSURLResponse *response;
+                       NSError *err;
+                       NSData *jsonData = [NSURLConnection sendSynchronousRequest:requestObj returningResponse:&response error:&err];
+                       JSONDecoder *decoder = [JSONDecoder decoderWithParseOptions:JKParseOptionStrict];
+                       NSData *jsonList = [jsonData copy];
+                       
+                       NSDictionary *returnedData = [decoder objectWithData:jsonList error:nil];
+                       
+                       NSLog(@"Order status? %@", returnedData);
+                       
+                       dispatch_async(dispatch_get_main_queue(), ^
+                                      {
+                                          [[NSNotificationCenter defaultCenter] postNotificationName:@"OrderFulfilled" object:nil userInfo:returnedData];
+                                      });
+                   });*/
+    
+    NSLog(@"Flag order");
 }
 
 @end

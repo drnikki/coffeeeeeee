@@ -15,6 +15,8 @@
 
 @implementation BaristaStatusViewController
 
+@synthesize delegate;
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -30,10 +32,11 @@
 	// Do any additional setup after loading the view.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onStatusUpdated:) name:@"StatusUpdated" object:nil];
     
-    [self initStates];
+    [self initUI];
+    [self activateUI];
 }
 
-- (IBAction)openStore:(id)sender
+- (void)openStore
 {
     UIAlertView *statusChangeAlert = [[UIAlertView alloc]
                             initWithTitle:alertTitle
@@ -44,22 +47,11 @@
     [statusChangeAlert show];
 }
 
-- (IBAction)closeStore:(id)sender
+- (void)closeStore
 {
     UIAlertView *statusChangeAlert = [[UIAlertView alloc]
                             initWithTitle:alertTitle
                             message:alertClosed
-                            delegate:self
-                            cancelButtonTitle:@"Yes please!"
-                            otherButtonTitles:@"No thanks!", nil];
-    [statusChangeAlert show];
-}
-
-- (IBAction)onBreakStore:(id)sender
-{
-    UIAlertView *statusChangeAlert = [[UIAlertView alloc]
-                            initWithTitle:alertTitle
-                            message:alertBreak
                             delegate:self
                             cancelButtonTitle:@"Yes please!"
                             otherButtonTitles:@"No thanks!", nil];
@@ -76,6 +68,8 @@
         if(buttonIndex == 0)
         {
             [ConnectionManager updateStoreStatus:statusOpen];
+            [self.delegate showLoadingView:YES withLabel:@"Powering the café up..."];
+            NSLog(@"show loading view just got called in barista status view");
             //NSLog( @"OPEN SUCCESS");
             //[self openSuccess];
         }
@@ -86,6 +80,7 @@
         if(buttonIndex == 0)
         {
             [ConnectionManager updateStoreStatus:statusClose];
+            [self.delegate showLoadingView:YES withLabel:@"Powering the café down..."];
             //[self closedSuccess];
         }
     }
@@ -96,35 +91,57 @@
         {
             [ConnectionManager updateStoreStatus:statusBreak];
             //[self breakSuccess];
+            self.alertHasShown = NO;
+        }
+        
+        if(buttonIndex == 1)
+        {
+            [self onBreakSwitchRevert];
+        }
+    }
+    
+    else if( [alertBreakReturn isEqualToString:alertView.message])
+    {
+        if(buttonIndex == 0)
+        {
+            [ConnectionManager updateStoreStatus:statusOpen];
+            //[self breakSuccess];
+            self.alertHasShown = NO;
+        }
+        
+        if(buttonIndex == 1)
+        {
+            [self onBreakSwitchRevert];
         }
     }
 }
 
 - (void)openSuccess
 {
-    self.openButton.hidden = YES;
-    self.openOn.hidden = NO;
+    [self.powerButton setOn:YES];
+    [self updateBreakSwitch:YES];
     
-    self.closedButton.hidden = self.onBreakButton.hidden = NO;
-    self.closedOn.hidden = self.onBreakOn.hidden = YES;
+    [self.delegate showLoadingView:NO];
+    
 }
 
 - (void)closedSuccess
 {
-    self.closedButton.hidden = YES;
-    self.closedOn.hidden = NO;
+    [self.powerButton setOn:NO];
+    [self updateBreakSwitch:NO];
     
-    self.openButton.hidden = self.onBreakButton.hidden = NO;
-    self.openOn.hidden = self.onBreakOn.hidden = YES;
+    [self.delegate showLoadingView:NO];
 }
 
 - (void)breakSuccess
 {
-    self.onBreakButton.hidden = YES;
-    self.onBreakOn.hidden = NO;
-    
-    self.closedButton.hidden = self.openButton.hidden = NO;
-    self.closedOn.hidden = self.openOn.hidden = YES;
+    //self.alertHasShown = NO;
+}
+
+- (void)onBreakSwitchRevert
+{
+    if( self.onBreakSwitch.isOn ) [self.onBreakSwitch setOn:NO];
+    else [self.onBreakSwitch setOn:YES];
 }
 
 - (void)didReceiveMemoryWarning
@@ -133,13 +150,73 @@
     // Dispose of any resources that can be recreated.
 }
 
--(void)initStates
+-(void)initUI
 {
-    self.openOn.hidden = self.onBreakOn.hidden = YES;
-    self.closedButton.hidden = YES;
+    //power button
+    self.powerButton = [[ToggleView alloc] initWithFrame:CGRectMake(28, 17, 145, 40)];
+    [self.powerButton setOnImage:@"power_down.png"];
+    [self.powerButton setOffImage:@"power_up.png"];
+    [self.powerButton setBackgroundColor:[UIColor clearColor]];
+    [self.powerButton setOn:NO];
     
-    self.openButton.hidden = self.onBreakButton.hidden = NO;
-    self.closedOn.hidden = NO;
+    [self.view addSubview:self.powerButton];
+    
+    //on break switch
+    self.onBreakSwitch = [[RCSwitchOnOff alloc] initWithFrame:CGRectMake(574, 16, 177, 44)];
+    [self.onBreakSwitch setOn:YES];
+    [self.view addSubview:self.onBreakSwitch];
+    
+    //check for store on or off maybe?
+    [self updateBreakSwitch:NO];
+}
+
+-(void)activateUI
+{
+    UITapGestureRecognizer *powerGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(updatePowerButton:)];
+    
+    [self.powerButton addGestureRecognizer:powerGR];
+    
+    [self.onBreakSwitch addTarget:self action:@selector(onSwitchUpdated:) forControlEvents:UIControlEventValueChanged];
+}
+
+-(void)onSwitchUpdated:(NSNotification *)notification
+{
+    if( self.alertHasShown )
+    {
+        self.alertHasShown = NO;
+        return;
+    }
+    
+    UIAlertView *statusChangeAlert = [[UIAlertView alloc]
+                                      initWithTitle:alertTitle
+                                      message:alertBreak
+                                      delegate:self
+                                      cancelButtonTitle:@"Yes please!"
+                                      otherButtonTitles:@"No thanks!", nil];
+    if( self.onBreakSwitch.isOn )
+    {
+        [statusChangeAlert setMessage:alertBreakReturn];
+    }
+    
+    [statusChangeAlert show];
+    self.alertHasShown = YES;
+}
+
+-(void)updatePowerButton:(id)sender
+{
+    //Check the current state. Throw alert
+    if( self.powerButton.on ) [self closeStore];
+    else [self openStore];
+    
+    
+    //[self.delegate showLoadingView:YES];
+}
+
+-(void)updateBreakSwitch:(BOOL)on
+{
+    [self.onBreakSwitch setEnabled:on];
+    [self.onBreakSwitch setAlpha:( on ? 1.0f : 0.3f)];
+    [self.onBreakSwitchLabel setAlpha:( on? 1.0f : 0.3f)];
 }
 
 -(void)onStatusUpdated:(NSNotification *)notification

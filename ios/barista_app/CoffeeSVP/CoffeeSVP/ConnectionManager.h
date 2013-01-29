@@ -18,6 +18,7 @@
 @interface ConnectionManager : NSObject
 
 @property (strong, nonatomic) NSMutableArray *orderQueue;
+@property BOOL queueHasLoaded;
 
 + (ConnectionManager *)shareInstance;
 

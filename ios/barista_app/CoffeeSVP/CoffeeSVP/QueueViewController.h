@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Order.h"
 
 #define alertCompleteTitle @"DRINK COMPLETE"
 #define alertFlagTitle @"DRINK FLAG"
@@ -16,8 +17,19 @@
 #define alertCompleteBody @"Do you confirm you have completed the drink for %@?"
 #define alertFlagBody @"Do you confirm there is a problem with the drink for %@?"
 
+@protocol QueueViewControllerDelegate <NSObject>
+- (void)showLoadingView:(BOOL)on;
+- (void)showLoadingView:(BOOL)on withLabel:(NSString *)label;
+- (void) updateNotesView:(Order *)thisOrder;
+- (void) hideNotesView:(NSNotification *)notification;
+@end
+
 @interface QueueViewController : UIViewController
 <UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate>
+
+@property (assign) id <QueueViewControllerDelegate> delegate;
+
+@property (nonatomic, strong) NSTimer *loopTimer;
 
 @property (nonatomic) float gaugeRotation;
 @property (nonatomic) float totalRotation;
@@ -28,6 +40,8 @@
 @property (nonatomic, strong) UIImageView *dynamicNeedle;
 @property (nonatomic, strong) UIImageView *dynamicNeedleBusy;
 
+@property (nonatomic, strong) IBOutlet UILabel *queueTotal;
+
 // order item vars
 @property (nonatomic, strong) IBOutlet UILabel *currentName;
 @property (nonatomic, strong) IBOutlet UILabel *currentOrder;
@@ -35,15 +49,14 @@
 @property (nonatomic, strong) IBOutlet UIButton *notesButton;
 @property (nonatomic, strong) IBOutlet UITableView *upcomingOrderFeed;
 
-@property (nonatomic, strong) IBOutlet UIView *loadingView;
-
 @property (nonatomic, strong) IBOutlet UIView *currentOrderView;
 @property (nonatomic, strong) IBOutlet UIImageView *queueEmptyView;
 
 // special instructions view
-@property (nonatomic, strong) IBOutlet UIView *notesView;
-@property (nonatomic, strong) IBOutlet UILabel *notesName;
-@property (nonatomic, strong) IBOutlet UILabel *notesOrder;
+
+
+// user prefs
+@property (nonatomic, strong) NSUserDefaults *prefs;
 
 - (IBAction)gaugeDown:(id)sender;
 - (IBAction)gaugeUp:(id)sender;

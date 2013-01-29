@@ -9,15 +9,14 @@
 #import <UIKit/UIKit.h>
 
 @class IntroViewController;
-@class BaristaStatusViewController;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
 @property (strong, nonatomic) IntroViewController *introViewController;
-@property (strong, nonatomic) BaristaStatusViewController *baristaStatusViewController;
+
 
 - (void)showIntroViewController;
-- (void)showStatusViewController;
+
 
 @end

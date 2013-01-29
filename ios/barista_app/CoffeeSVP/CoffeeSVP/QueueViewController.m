@@ -18,6 +18,7 @@
 @implementation QueueViewController
 
 @synthesize gaugeRotation, totalRotation, warningAlpha;
+@synthesize delegate;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -26,6 +27,94 @@
         // Custom initialization
     }
     return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+	// Do any additional setup after loading the view.
+    
+    self.prefs = [NSUserDefaults standardUserDefaults];
+    
+    [self.upcomingOrderFeed setDelegate:self];
+    [self.upcomingOrderFeed setDataSource:self];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onOrderQueueLoaded:) name:@"OrderQueueLoaded" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCellNotesLoaded:) name:@"CellNotesClicked" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCellOrderCompleted:) name:@"CellOrderCompleted" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCellOrderFlagged:) name:@"CellOrderFlagged" object:nil];
+    
+    [self initNeedle];
+    //[self initNotesView];
+    
+    if (!self.loopTimer)
+    {
+        if(![self.prefs boolForKey:@"queueViewLoaded"])
+        {
+            [self loadQueue];
+            //[self.delegate showLoadingView:YES];
+        }
+        else [self updateQueue];
+        
+        self.loopTimer = [NSTimer scheduledTimerWithTimeInterval:8.0 target:self selector:@selector(loadQueue) userInfo: nil repeats:NO];
+        [[NSRunLoop currentRunLoop] addTimer:self.loopTimer forMode:NSRunLoopCommonModes];
+    }
+    //[self loadQueue];
+    
+    if(![self.prefs boolForKey:@"queueViewLoaded"])
+    {
+        NSLog(@"NO VALUE!");
+        [self.prefs setBool:YES forKey:@"queueViewLoaded"];
+        
+    }
+    
+    else
+    {
+        [self setStage];
+    }
+    
+    NSLog(@"View Did Load");
+    
+}
+
+- (void)setStage
+{
+    
+    totalRotation = [self.prefs floatForKey:@"needleRotation"];
+    warningAlpha = [self.prefs floatForKey:@"needleAlpha"];
+    
+    NSLog(@"prefs: %f", totalRotation);
+    
+    self.dynamicNeedleView.transform = CGAffineTransformRotate(self.dynamicNeedleView.transform,totalRotation);
+    self.dynamicNeedleBusy.alpha = warningAlpha;
+}
+- (void)initNeedle
+{
+    
+    gaugeRotation = totalRotation = 0;
+    warningAlpha = 0;
+    
+    //[self.prefs setFloat:totalRotation forKey:@"needleRotation"];
+    //[self.prefs setFloat:warningAlpha forKey:@"needleAlpha"];
+    
+    self.dynamicNeedleView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 252, 252)];
+    
+    self.dynamicNeedle = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"barista_gauge.png"]];
+    self.dynamicNeedle.frame = CGRectMake( 0, 0, 252, 252);
+    
+    self.dynamicNeedleBusy = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"barista_gauge_red.png"]];
+    self.dynamicNeedleBusy.frame = CGRectMake( 0, 0, 252, 252);
+    self.dynamicNeedleBusy.alpha = 0.0f;
+    
+    [self.needleView addSubview:self.dynamicNeedleView];
+    
+    [self.dynamicNeedleView addSubview:self.dynamicNeedle];
+    [self.dynamicNeedleView addSubview:self.dynamicNeedleBusy];
+}
+
+- (void)loadQueue
+{
+    [ConnectionManager getQueue];
 }
 
 - (IBAction)gaugeDown:(id)sender
@@ -48,14 +137,17 @@
                      }];
     
     [UIView animateWithDuration: 0.3f
-                        delay: 0.0f
+                          delay: 0.0f
                         options: (UIViewAnimationOptionCurveEaseOut)
-                        animations: ^{
-                            self.dynamicNeedleBusy.alpha = warningAlpha;
-                    }
-                    completion: ^(BOOL finished) {
-                        //do nothing
-                    }];
+                     animations: ^{
+                         self.dynamicNeedleBusy.alpha = warningAlpha;
+                     }
+                     completion: ^(BOOL finished) {
+                         //do nothing
+                     }];
+    
+    [self.prefs setFloat:totalRotation forKey:@"needleRotation"];
+    [self.prefs setFloat:warningAlpha forKey:@"needleAlpha"];
 }
 
 - (IBAction)gaugeUp:(id)sender
@@ -66,7 +158,7 @@
     totalRotation += gaugeRotation;
     
     warningAlpha = (totalRotation <= 0) ? 0 : (totalRotation / rotationLimit);
-
+    
     [UIView animateWithDuration: 0.3f
                           delay: 0.0f
                         options: (UIViewAnimationOptionCurveEaseOut)
@@ -86,31 +178,11 @@
                      completion: ^(BOOL finished) {
                          //do nothing
                      }];
-}
-
-- (void)initNeedle
-{
-    gaugeRotation = totalRotation = 0;
-    warningAlpha = 0;
     
-    self.dynamicNeedleView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 252, 252)];
+    [self.prefs setFloat:totalRotation forKey:@"needleRotation"];
+    [self.prefs setFloat:warningAlpha forKey:@"needleAlpha"];
     
-    self.dynamicNeedle = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"barista_gauge.png"]];
-    self.dynamicNeedle.frame = CGRectMake( 0, 0, 252, 252);
-    
-    self.dynamicNeedleBusy = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"barista_gauge_red.png"]];
-    self.dynamicNeedleBusy.frame = CGRectMake( 0, 0, 252, 252);
-    self.dynamicNeedleBusy.alpha = 0.0f;
-    
-    [self.needleView addSubview:self.dynamicNeedleView];
-    
-    [self.dynamicNeedleView addSubview:self.dynamicNeedle];
-    [self.dynamicNeedleView addSubview:self.dynamicNeedleBusy];
-}
-
-- (void)initQueue
-{
-    [ConnectionManager getQueue];
+    //NSLog(@"totalRotation: %f", [self.prefs floatForKey:@"needleRotation"]);
 }
 
 - (IBAction)drinkComplete:(id)sender
@@ -149,6 +221,9 @@
         if(buttonIndex == 0)
         {
             [ConnectionManager completeOrder:[o orderID]];
+            [[ConnectionManager shareInstance].orderQueue removeObjectAtIndex:0];
+            
+            [self updateQueue];
         }
     }
     
@@ -184,32 +259,12 @@
 {
     NSLog(@"View Note");
     
-    [self updateNotesView:[[ConnectionManager shareInstance].orderQueue objectAtIndex:0]];
-}
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-	// Do any additional setup after loading the view.
-    
-    [self.upcomingOrderFeed setDelegate:self];
-    [self.upcomingOrderFeed setDataSource:self];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onOrderQueueLoaded:) name:@"OrderQueueLoaded" object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCellNotesLoaded:) name:@"CellNotesClicked" object:nil];
-    
-    [self initNeedle];
-    [self initQueue];
-    [self initNotesView];
+    [self.delegate updateNotesView:[[ConnectionManager shareInstance].orderQueue objectAtIndex:0]];
 }
 
 -(void)onOrderQueueLoaded:(NSNotification *)notification
 {
-    //Order *o = [[ConnectionManager shareInstance].orderQueue objectAtIndex:0];
-    //NSLog(@"Queue loaded: %@", [o orderItem]);
-    
-    // TURN LOADING OFF
-    
+    /*
     if (!self.loadingView.hidden)
         [UIView animateWithDuration:1.0 delay:0.0 options: UIViewAnimationCurveEaseOut
                          animations:^{
@@ -218,15 +273,42 @@
                          completion:^(BOOL finished){
                              self.loadingView.hidden = YES;
                          }];
+    */
+    //[self.parentViewController showLoadingView:NO];
     
+    
+    [self.delegate showLoadingView:NO];
+    
+    [self updateQueue];
+    
+    [self.loopTimer invalidate];
+    self.loopTimer = nil;
+    self.loopTimer = [NSTimer scheduledTimerWithTimeInterval:8.0 target:self selector:@selector(loadQueue) userInfo: nil repeats:NO];
+    
+}
+
+-(void)updateQueue
+{
     [self updateCurrentOrder];
     [self.upcomingOrderFeed reloadData];
-    
+    [self updateQueueTotal];
 }
 
 -(void)onCellNotesLoaded:(NSNotification *)notification
 {
-    [self updateNotesView:[notification.userInfo objectForKey:@"order"]];
+    [self.delegate updateNotesView:[notification.userInfo objectForKey:@"order"]];
+}
+
+-(void)onCellOrderCompleted:(NSNotification *)notification
+{
+    [[ConnectionManager shareInstance].orderQueue removeObjectAtIndex:[(UpcomingOrderCell *)[notification.userInfo objectForKey:@"row"] queuePosition]];
+    [self updateQueue];
+}
+
+-(void)onCellOrderFlagged:(NSNotification *)notification
+{
+    [self.delegate updateNotesView:[notification.userInfo objectForKey:@"order"]];
+    
 }
 
 - (void) updateCurrentOrder
@@ -250,6 +332,14 @@
     [self currentOrder].text = [current orderItem];
     
     if([current specialInstructions] == (NSString *)[NSNull null] || [[current specialInstructions] isEqualToString:@""] ) [self notesButton].hidden = YES;
+    else [self notesButton].hidden = NO;
+}
+
+-(void) updateQueueTotal
+{
+    
+    if([[ConnectionManager shareInstance].orderQueue count] >= 10) [self.queueTotal setText:[NSString stringWithFormat:@"%u", [[ConnectionManager shareInstance].orderQueue count]]];
+    else [self.queueTotal setText:[NSString stringWithFormat:@"0%u", [[ConnectionManager shareInstance].orderQueue count]]];
 }
 
 //Table View functions
@@ -288,50 +378,12 @@
     else cell.itemLabel.text = @"Invalid Order";
     
     if([o specialInstructions] == (NSString *)[NSNull null] || [[o specialInstructions] isEqualToString:@""]) cell.notesButton.hidden = YES;
+    else cell.notesButton.hidden = NO;
     
     [cell setThisOrder:o];
+    [cell setQueuePosition:indexPath.row+1];
     
     return cell;
-}
-
-// Notes View Methods //
-
-- (void) initNotesView
-{
-    self.notesView.hidden = YES;
-    self.notesView.alpha = 0.0f;
-    
-    UITapGestureRecognizer *notesGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hideNotesView:)];
-    
-    [self.notesView addGestureRecognizer:notesGR];
-}
-
-- (void) updateNotesView:(Order *)thisOrder
-{
-    self.notesName.text = [thisOrder personID];
-    self.notesOrder.text = [thisOrder specialInstructions];
-    
-    self.notesView.hidden = NO;
-    //self.notesView.alpha = 1.0f;
-    
-    [UIView animateWithDuration:0.2 delay:0.0 options: UIViewAnimationCurveEaseOut
-                     animations:^{
-                         self.notesView.alpha = 1.0;
-                     }
-                     completion:^(BOOL finished){
-                         //self.loadingView.hidden = YES;
-                     }];
-}
-
-- (void) hideNotesView:(NSNotification *)notification
-{
-    [UIView animateWithDuration:0.3 delay:0.0 options: UIViewAnimationCurveEaseOut
-                     animations:^{
-                         self.notesView.alpha = 0.0;
-                     }
-                     completion:^(BOOL finished){
-                         self.notesView.hidden = YES;
-                     }];
 }
 
 - (void)didReceiveMemoryWarning
@@ -340,18 +392,49 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (void)viewWillUnload
+{
+    [super viewWillUnload];
+    
+    //NSLog(@"total rotation:%f", self.totalRotation);
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    if (self.loopTimer)
+    {
+        [self.loopTimer invalidate];
+        self.loopTimer = nil;
+    }
+}
+
+
 - (void)viewDidUnload
 {
     [super viewDidUnload];
     
+    NSLog(@"View Did Unload");
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"OrderQueueLoaded" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellNotesClicked" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderCompleted" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderFlagged" object:nil];
 }
 
 - (void)dealloc
 {
+    if (self.loopTimer)
+    {
+        [self.loopTimer invalidate];
+        self.loopTimer = nil;
+    }
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"OrderQueueLoaded" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellNotesClicked" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderCompleted" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderFlagged" object:nil];
 }
 
 @end
