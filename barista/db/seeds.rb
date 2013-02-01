@@ -8,7 +8,7 @@
 
 # store-wide variables
 StoreConfig.create(name:  'status', value: "closed") # closed, open, break 
-StoreConfig.create(name: 'milks', value: 'regular, soy, skim') # not sure about this one...
+StoreConfig.create(name: 'milks', value: 'regular,soy,skim,half and half') # not sure about this one...
 
 # state of now variables
 StoreConfig.create(name: 'busy_until', value: '') # this is a timestamp.
