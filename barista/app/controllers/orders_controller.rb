@@ -18,9 +18,11 @@ class OrdersController < ApplicationController
     # if the order is incomplete, we need to return the order's
     # place in the queue and the approximate wait time.
     # adding one to this so it's not zero based, for the people.
-     @order[:queue_place] = Order.where('fulfilled IS NULL AND placed < ?', @order.placed).count + 1
-     @order[:wait_time] = StoreConfig.find('avg_wait_time').value
-
+    if @order.fulfilled.nil?
+      @order[:queue_place] = Order.where('fulfilled IS NULL AND placed < ?', @order.placed).count + 1
+      @order[:wait_time] = StoreConfig.find('avg_wait_time').value
+    end
+    
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @order }
