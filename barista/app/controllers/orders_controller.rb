@@ -111,7 +111,8 @@ class OrdersController < ApplicationController
   # GET /queue
   # GET /queue.json
   def queue
-    @orders = Order.where(:fulfilled => nil)
+    # yesterday's undone orders will still have fulfilled = NULL
+    @orders = Order.where('fulfilled IS NULL AND created_at > ?', Time.zone.now.beginning_of_day)
 
     respond_to do |format|
       format.html # index.html.erb
