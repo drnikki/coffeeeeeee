@@ -9,20 +9,19 @@
 #import <UIKit/UIKit.h>
 #import "ToggleView.h"
 #import "BaristaStatusViewController.h"
+#import "GalleryViewController.h"
+#import "SettingsViewController.h"
+#import "StatsViewController.h"
+#import "LoadingViewController.h"
 #import "QueueViewController.h"
 #import "SpecialInstructionsViewController.h"
 
 #define queueSlug @"queue"
 #define settingsSlug @"settings"
 #define statsSlug @"stats"
+#define gallerySlug @"gallery"
 
-//@class BaristaStatusViewController;
-//@class QueueViewController;
-@class SettingsViewController;
-@class StatsViewController;
-@class LoadingViewController;
-
-@interface MainViewController : UIViewController <QueueViewControllerDelegate, BaristaStatusViewControllerDelegate>
+@interface MainViewController : UIViewController <QueueViewControllerDelegate, BaristaStatusViewControllerDelegate, GalleryViewControllerDelegate>
 
 @property (strong, nonatomic) BaristaStatusViewController *baristaStatusViewController;
 @property (strong, nonatomic) QueueViewController *queueViewController;
@@ -30,10 +29,12 @@
 @property (strong, nonatomic) StatsViewController *statsViewController;
 @property (strong, nonatomic) LoadingViewController *loadingViewController;
 @property (strong, nonatomic) SpecialInstructionsViewController *specialInstructionsViewController;
+@property (strong, nonatomic) GalleryViewController *galleryViewController;
 
 @property (strong, nonatomic) ToggleView *queueButton;
 @property (strong, nonatomic) ToggleView *settingsButton;
 @property (strong, nonatomic) ToggleView *statsButton;
+@property (strong, nonatomic) ToggleView *galleryButton;
 
 @property (strong, nonatomic) NSUserDefaults *prefs;
 

@@ -14,17 +14,19 @@
 #define ordersUrl @"orders"
 #define menuUrl @"menu_items"
 #define storeConfigsUrl @"store_configs"
+#define statusUrl @"status"
 
 @interface ConnectionManager : NSObject
 
 @property (strong, nonatomic) NSMutableArray *orderQueue;
+@property (strong, nonatomic) NSString *storeStatus;
 @property BOOL queueHasLoaded;
 
 + (ConnectionManager *)shareInstance;
 
-+ (void)getMenu;
 + (void)getQueue;
 
++ (void)getStoreStatus;
 + (void)updateStoreStatus:(NSString *)withStatus;
 
 + (void)completeOrder:(NSString *)withID;

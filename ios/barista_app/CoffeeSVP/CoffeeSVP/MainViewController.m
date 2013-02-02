@@ -8,6 +8,7 @@
 
 #import "MainViewController.h"
 #import "BaristaStatusViewController.h"
+#import "ConnectionManager.h"
 #import "Order.h"
 #import "QueueViewController.h"
 #import "SettingsViewController.h"
@@ -21,6 +22,7 @@
 @implementation MainViewController
 
 @synthesize baristaStatusViewController = _baristaStatusViewController;
+@synthesize galleryViewController = _galleryViewController;
 @synthesize queueViewController = _queueViewController;
 @synthesize settingsViewController = _settingsViewController;
 @synthesize statsViewController = _statsViewController;
@@ -43,10 +45,15 @@
     
     self.prefs = [NSUserDefaults standardUserDefaults];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onStatusUpdated:) name:@"StatusUpdated" object:nil];
+    
     [self initStatusViewController];
     [self initVerticalTabButtons];
     [self initNotesView];
     [self initLoadingView];
+    
+    [self showLoadingView:YES withLabel:@"Checking store status..."];
+    [ConnectionManager getStoreStatus];
 }
 
 - (void)initStatusViewController
@@ -81,17 +88,26 @@
     self.statsButton = [[ToggleView alloc] initWithFrame:CGRectMake(14, 267, 98, 91)];
     [self.statsButton setOnImage:@"btn_stats_on.png"];
     [self.statsButton setOffImage:@"btn_stats_off.png"];
-    [self.statsButton setOn:YES];
+    [self.statsButton setOn:NO];
     [self.statsButton setBackgroundColor:[UIColor clearColor]];
     [self.view addSubview:self.statsButton];
+    
+    self.galleryButton = [[ToggleView alloc] initWithFrame:CGRectMake(14, 362, 98, 91)];
+    [self.galleryButton setOnImage:@"btn_gallery_on.png"];
+    [self.galleryButton setOffImage:@"btn_gallery_off.png"];
+    [self.galleryButton setOn:YES];
+    [self.galleryButton setBackgroundColor:[UIColor clearColor]];
+    [self.view addSubview:self.galleryButton];
     
     UITapGestureRecognizer *queueGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabQueueClick:)];
     UITapGestureRecognizer *settingsGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabSettingsClick:)];
     UITapGestureRecognizer *statsGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabStatsClick:)];
+    UITapGestureRecognizer *galleryGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabGalleryClick:)];
     
     [self.queueButton addGestureRecognizer:queueGR];
     [self.settingsButton addGestureRecognizer:settingsGR];
     [self.statsButton addGestureRecognizer:statsGR];
+    [self.galleryButton addGestureRecognizer:galleryGR];
     
 }
 
@@ -131,7 +147,9 @@
     self.specialInstructionsViewController.notesOrder.text = [thisOrder specialInstructions];
     self.specialInstructionsViewController.data = thisOrder;
     
-    [self.specialInstructionsViewController.notesOrder sizeToFit];
+    //CGRect *frame = [[CGREct alloc] initWithFrame:]CGRectMake(self.specialInstructionsViewController.notesOrder.frame.origin.x, self.specialInstructionsViewController.notesOrder.frame.origin.y, 346, 60);
+    //self.specialInstructionsViewController.notesOrder.frame.size.width = 346;
+    //[self.specialInstructionsViewController.notesOrder sizeToFit];
     
     self.specialInstructionsViewController.view.hidden = NO;
     
@@ -239,6 +257,23 @@
         [self.queueViewController setDelegate:self];
         
     }
+    
+    else if([tabName isEqualToString:gallerySlug])
+    {
+        
+        if(![self.prefs boolForKey:@"galleryViewLoaded"])
+        {
+            [self showLoadingView:YES withLabel:@"Loading gallery data..."];
+        }
+        
+        self.galleryViewController = [mainStoryboard instantiateViewControllerWithIdentifier:@"galleryView"];
+        self.galleryViewController.view.frame = newSize;
+        self.galleryViewController.view.backgroundColor = [UIColor clearColor];
+        [self.galleryViewController setDelegate:self];
+        [self.tabContainer addSubview:self.galleryViewController.view];
+        
+        
+    }
 
 }
 
@@ -249,6 +284,7 @@
     [self.queueButton setOn:YES];
     [self.settingsButton setOn:NO];
     [self.statsButton setOn:NO];
+    [self.galleryButton setOn:NO];
     
     [self loadTabView:queueSlug];
 }
@@ -260,6 +296,7 @@
     [self.queueButton setOn:NO];
     [self.settingsButton setOn:YES];
     [self.statsButton setOn:NO];
+    [self.galleryButton setOn:NO];
     
     [self loadTabView:settingsSlug];
 }
@@ -271,8 +308,26 @@
     [self.queueButton setOn:NO];
     [self.settingsButton setOn:NO];
     [self.statsButton setOn:YES];
+    [self.galleryButton setOn:NO];
     
     [self loadTabView:statsSlug];
+}
+
+- (void)tabGalleryClick:(id)sender
+{
+    if( self.galleryButton.on) return;
+    
+    [self.queueButton setOn:NO];
+    [self.settingsButton setOn:NO];
+    [self.statsButton setOn:NO];
+    [self.galleryButton setOn:YES];
+    
+    [self loadTabView:gallerySlug];
+}
+
+- (void)viewDidUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusUpdated" object:nil];
 }
 
 - (void)didReceiveMemoryWarning

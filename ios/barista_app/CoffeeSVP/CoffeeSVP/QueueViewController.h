@@ -12,7 +12,7 @@
 #define alertCompleteTitle @"DRINK COMPLETE"
 #define alertFlagTitle @"DRINK FLAG"
 
-#define rotationLimit 1.5f
+#define rotationLimit 1.3f
 
 #define alertCompleteBody @"Do you confirm you have completed the drink for %@?"
 #define alertFlagBody @"Do you confirm there is a problem with the drink for %@?"
@@ -35,6 +35,8 @@
 @property (nonatomic) float totalRotation;
 @property (nonatomic) float warningAlpha;
 
+@property (nonatomic, strong) IBOutlet UIView *dynamicValuesView;
+
 @property (nonatomic, strong) IBOutlet UIView *needleView;
 @property (nonatomic, strong) UIView *dynamicNeedleView;
 @property (nonatomic, strong) UIImageView *dynamicNeedle;
@@ -51,9 +53,6 @@
 
 @property (nonatomic, strong) IBOutlet UIView *currentOrderView;
 @property (nonatomic, strong) IBOutlet UIImageView *queueEmptyView;
-
-// special instructions view
-
 
 // user prefs
 @property (nonatomic, strong) NSUserDefaults *prefs;

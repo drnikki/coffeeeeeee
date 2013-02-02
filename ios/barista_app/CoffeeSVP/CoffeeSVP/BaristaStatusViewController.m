@@ -31,6 +31,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onStatusUpdated:) name:@"StatusUpdated" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onStatusLoaded:) name:@"StoreStatusLoaded" object:nil];
     
     [self initUI];
     [self activateUI];
@@ -60,8 +61,8 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    NSLog(@"alert view: %@", alertView.message);
-    NSLog(@"which button: %i", buttonIndex);
+    //NSLog(@"alert view: %@", alertView.message);
+    //NSLog(@"which button: %i", buttonIndex);
     
     if( [alertOpen isEqualToString:alertView.message])
     {
@@ -221,13 +222,24 @@
 
 -(void)onStatusUpdated:(NSNotification *)notification
 {
-    NSLog(@"%@", [notification.userInfo objectForKey:@"value"]);
+    //NSLog(@"%@", [notification.userInfo objectForKey:@"value"]);
     
-    if( [statusOpen isEqualToString:[notification.userInfo objectForKey:@"value"]]) [self openSuccess];
+    if( [statusOpen isEqualToString:[ConnectionManager shareInstance].storeStatus]) [self openSuccess];
     
-    else if( [statusClose isEqualToString:[notification.userInfo objectForKey:@"value"]]) [self closedSuccess];
+    else if( [statusClose isEqualToString:[ConnectionManager shareInstance].storeStatus]) [self closedSuccess];
     
-    else if( [statusBreak isEqualToString:[notification.userInfo objectForKey:@"value"]]) [self breakSuccess];
+    else if( [statusBreak isEqualToString:[ConnectionManager shareInstance].storeStatus]) [self breakSuccess];
+}
+
+-(void)onStatusLoaded:(NSNotification *)notification
+{
+    [self.delegate showLoadingView:NO];
+    
+    if( [statusOpen isEqualToString:[ConnectionManager shareInstance].storeStatus]) [self openSuccess];
+    
+    else if( [statusClose isEqualToString:[ConnectionManager shareInstance].storeStatus]) [self closedSuccess];
+    
+    else if( [statusBreak isEqualToString:[ConnectionManager shareInstance].storeStatus]) [self breakSuccess];
 }
 
 - (void)viewDidUnload
@@ -235,11 +247,13 @@
     [super viewDidUnload];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusUpdated" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StoreStatusLoaded" object:nil];
 }
 
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusUpdated" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StoreStatusLoaded" object:nil];
 }
 
 @end

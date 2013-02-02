@@ -23,16 +23,12 @@
             sharedSingleton = [[ConnectionManager alloc] init];
             
             sharedSingleton.orderQueue = [[NSMutableArray alloc] init];
+            sharedSingleton.storeStatus = @"";
             
             sharedSingleton.queueHasLoaded = NO;
         }
         return sharedSingleton;
     }
-}
-
-+ (void)getMenu
-{
-    NSLog(@"getMenu");
 }
 
 + (void)getQueue
@@ -81,6 +77,31 @@
     });
 }
 
++ (void)getStoreStatus
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
+                   {
+                       NSString *urlAddress = [NSString stringWithFormat:@"%@/%@/%@.json", dataServiceBase, storeConfigsUrl, statusUrl];
+                       NSURL *url = [NSURL URLWithString:urlAddress];
+                       NSURLRequest *requestObj = [NSURLRequest requestWithURL:url];
+                       NSURLResponse *response;
+                       NSError *err;
+                       NSData *jsonData = [NSURLConnection sendSynchronousRequest:requestObj returningResponse:&response error:&err];
+                       JSONDecoder *decoder = [JSONDecoder decoderWithParseOptions:JKParseOptionStrict];
+                       NSData *jsonList = [jsonData copy];
+                       
+                       NSDictionary *statusData = [decoder objectWithData:jsonList error:nil];
+                       
+                       [ConnectionManager shareInstance].storeStatus = [statusData objectForKey:@"value"];
+                       NSLog(@"Status? %@", [ConnectionManager shareInstance].storeStatus);
+                       
+                       dispatch_async(dispatch_get_main_queue(), ^
+                                      {
+                                          [[NSNotificationCenter defaultCenter] postNotificationName:@"StoreStatusLoaded" object:nil userInfo:nil];
+                                      });
+                   });
+}
+
 + (void)updateStoreStatus:(NSString *)withStatus
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
@@ -88,7 +109,7 @@
         NSString *jsonRequest = [NSString stringWithFormat:@"{\"name\":\"status\",\"value\":\"%@\"}",withStatus];
         NSLog(@"Request: %@", jsonRequest);
     
-        NSString *urlAddress = [NSString stringWithFormat:@"%@/%@.json", dataServiceBase, storeConfigsUrl];
+        NSString *urlAddress = [NSString stringWithFormat:@"%@/%@/%@.json", dataServiceBase, storeConfigsUrl, statusUrl];
         NSURL *url = [NSURL URLWithString:urlAddress];
     
         NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
@@ -96,7 +117,7 @@
         NSURLResponse *response;
         NSError *err;
         
-        [request setHTTPMethod:@"POST"];
+        [request setHTTPMethod:@"PUT"];
         [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
         [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
         [request setValue:[NSString stringWithFormat:@"%d", [requestData length]] forHTTPHeaderField:@"Content-Length"];
@@ -108,13 +129,12 @@
         JSONDecoder *decoder = [JSONDecoder decoderWithParseOptions:JKParseOptionStrict];
         NSData *jsonList = [jsonData copy];
         
-        NSDictionary *newStatus = [decoder objectWithData:jsonList error:nil];
+        [ConnectionManager shareInstance].storeStatus = [decoder objectWithData:jsonList error:nil];
         
-        NSLog(@"Status: %@", newStatus);
         
         dispatch_async(dispatch_get_main_queue(), ^
         {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"StatusUpdated" object:nil userInfo:newStatus];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"StatusUpdated" object:nil];
         });
     });
 }

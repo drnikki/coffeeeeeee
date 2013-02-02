@@ -45,6 +45,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCellOrderFlagged:) name:@"CellOrderFlagged" object:nil];
     
     [self initNeedle];
+    [self initDynamicGaugeValues];
     //[self initNotesView];
     
     if (!self.loopTimer)
@@ -110,6 +111,56 @@
     
     [self.dynamicNeedleView addSubview:self.dynamicNeedle];
     [self.dynamicNeedleView addSubview:self.dynamicNeedleBusy];
+}
+
+- (void)initDynamicGaugeValues
+{
+    float color = (41/255);
+    
+    //add five rotated labels to dynamicValuesView
+    UILabel *label0 = [[UILabel alloc] initWithFrame:CGRectMake(190, 40, 24, 24)];
+    UILabel *label1 = [[UILabel alloc] initWithFrame:CGRectMake(242, -6, 24, 24)];
+    UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(310, -24, 24, 24)];
+    UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(378, -6, 24, 24)];
+    UILabel *label4 = [[UILabel alloc] initWithFrame:CGRectMake(430, 40, 24, 24)];
+    
+    label0.numberOfLines = label1.numberOfLines = label2.numberOfLines = label3.numberOfLines = label4.numberOfLines = 1;
+    label0.backgroundColor = label1.backgroundColor = label2.backgroundColor = label3.backgroundColor = label4.backgroundColor = [UIColor clearColor];
+    
+    [label0 setTextAlignment:NSTextAlignmentCenter];
+    [label1 setTextAlignment:NSTextAlignmentCenter];
+    [label2 setTextAlignment:NSTextAlignmentCenter];
+    [label3 setTextAlignment:NSTextAlignmentCenter];
+    [label4 setTextAlignment:NSTextAlignmentCenter];
+    
+    [label0 setTextColor:[UIColor colorWithRed:color green:color blue:color alpha:1.0f]];
+    [label1 setTextColor:[UIColor colorWithRed:color green:color blue:color alpha:1.0f]];
+    [label2 setTextColor:[UIColor colorWithRed:color green:color blue:color alpha:1.0f]];
+    [label3 setTextColor:[UIColor colorWithRed:color green:color blue:color alpha:1.0f]];
+    [label4 setTextColor:[UIColor colorWithRed:color green:color blue:color alpha:1.0f]];
+    
+    [label0 setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:18.0f]];
+    [label1 setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:18.0f]];
+    [label2 setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:18.0f]];
+    [label3 setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:18.0f]];
+    [label4 setFont:[UIFont fontWithName:@"HelveticaNeue-Light" size:18.0f]];
+    
+    label0.text = @"2";
+    label1.text = @"4";
+    label2.text = @"6";
+    label3.text = @"8";
+    label4.text = @"10";
+    
+    [label0 setTransform:CGAffineTransformMakeRotation( -M_PI/3 )];
+    [label1 setTransform:CGAffineTransformMakeRotation( -M_PI/6 )];
+    [label3 setTransform:CGAffineTransformMakeRotation( M_PI/6 )];
+    [label4 setTransform:CGAffineTransformMakeRotation( M_PI/3 )];
+    
+    [self.dynamicValuesView addSubview:label0];
+    [self.dynamicValuesView addSubview:label1];
+    [self.dynamicValuesView addSubview:label2];
+    [self.dynamicValuesView addSubview:label3];
+    [self.dynamicValuesView addSubview:label4];
 }
 
 - (void)loadQueue

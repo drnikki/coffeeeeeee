@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 bmaci. All rights reserved.
 //
 
+#import "AppUtilities.h"
 #import "IntroViewController.h"
 
 @interface IntroViewController ()
@@ -25,6 +26,9 @@
 
 - (IBAction)enterClicked:(id)sender
 {
+    [AppUtilities slideOutTop:self.view];
+    
+    /*
     [UIView animateWithDuration:0.6 delay:0.0 options: UIViewAnimationCurveEaseOut
                      animations:^{
                          self.view.alpha = 0.0;
@@ -32,6 +36,7 @@
                      completion:^(BOOL finished){
                          self.view.hidden = YES;
                      }];
+     */
 }
 
 - (void)viewDidLoad
