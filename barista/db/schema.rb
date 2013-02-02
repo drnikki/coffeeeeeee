@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130118164442) do
+ActiveRecord::Schema.define(:version => 20130201212437) do
 
   create_table "menu_items", :force => true do |t|
     t.string   "name"
@@ -29,6 +29,8 @@ ActiveRecord::Schema.define(:version => 20130118164442) do
     t.string   "person_id"
     t.text     "special_instructions"
     t.integer  "priority"
+    t.text     "milk"
+    t.datetime "flag"
   end
 
   create_table "store_configs", :force => true do |t|

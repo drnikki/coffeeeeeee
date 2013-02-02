@@ -61,7 +61,7 @@ class StoreConfigsController < ApplicationController
     respond_to do |format|
       if @store_config.update_attributes(params[:store_config])
         format.html { redirect_to @store_config, notice: 'Store config was successfully updated.' }
-        format.json { head :no_content }
+        format.json { render json: @store_config, status: :created, location: @store_config }
       else
         format.html { render action: "edit" }
         format.json { render json: @store_config.errors, status: :unprocessable_entity }
