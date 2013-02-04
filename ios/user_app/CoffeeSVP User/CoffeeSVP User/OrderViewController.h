@@ -7,7 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "OrderConfirmView.h"
+#import "OrderMenuDefaultView.h"
 
 @interface OrderViewController : UIViewController
+
+@property (strong, nonatomic) IBOutlet OrderConfirmView *orderConfirmView;
+@property (strong, nonatomic) IBOutlet OrderMenuDefaultView *orderMenuDefaultView;
 
 @end

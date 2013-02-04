@@ -14,7 +14,10 @@
 
 @property (nonatomic, strong) NSString *personID;
 @property (nonatomic, strong) NSString *orderItem;
+@property (nonatomic, strong) NSString *milkOption;
 @property (nonatomic, strong) NSString *specialInstructions;
+
+@property (nonatomic, strong) NSString *priority;
 
 @property (nonatomic, strong) NSDate *createdAt;
 @property (nonatomic, strong) NSDate *placedAt;

@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "Order.h"
+#import "SoundEffect.h"
 
 #define alertCompleteTitle @"DRINK COMPLETE"
 #define alertFlagTitle @"DRINK FLAG"
@@ -47,12 +48,16 @@
 // order item vars
 @property (nonatomic, strong) IBOutlet UILabel *currentName;
 @property (nonatomic, strong) IBOutlet UILabel *currentOrder;
+@property (nonatomic, strong) IBOutlet UIImageView *currentPriority;
 
 @property (nonatomic, strong) IBOutlet UIButton *notesButton;
 @property (nonatomic, strong) IBOutlet UITableView *upcomingOrderFeed;
 
 @property (nonatomic, strong) IBOutlet UIView *currentOrderView;
-@property (nonatomic, strong) IBOutlet UIImageView *queueEmptyView;
+@property (nonatomic, strong) IBOutlet UILabel *queueEmptyView;
+@property (nonatomic, strong) IBOutlet UILabel *mustOpenView;
+
+@property (nonatomic, strong) SoundEffect *soundEffect;
 
 // user prefs
 @property (nonatomic, strong) NSUserDefaults *prefs;

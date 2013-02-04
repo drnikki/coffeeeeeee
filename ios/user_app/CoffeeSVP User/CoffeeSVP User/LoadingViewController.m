@@ -1,18 +1,18 @@
 //
-//  OrderViewController.m
+//  LoadingViewController.m
 //  CoffeeSVP User
 //
-//  Created by bmaci on 2/2/13.
+//  Created by bmaci on 2/4/13.
 //  Copyright (c) 2013 bmaci. All rights reserved.
 //
 
-#import "OrderViewController.h"
+#import "LoadingViewController.h"
 
-@interface OrderViewController ()
+@interface LoadingViewController ()
 
 @end
 
-@implementation OrderViewController
+@implementation LoadingViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -26,12 +26,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view.
-}
-
-- (void)viewDidUnload
-{
-    [super viewDidUnload];
 	// Do any additional setup after loading the view.
 }
 

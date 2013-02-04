@@ -8,6 +8,7 @@
 
 #import "ConnectionManager.h"
 #import "JSONKit.h"
+#import "AppUtilities.h"
 #import "Order.h"
 
 @implementation ConnectionManager
@@ -26,6 +27,7 @@
             sharedSingleton.storeStatus = @"";
             
             sharedSingleton.queueHasLoaded = NO;
+            sharedSingleton.isWritingToService = NO;
         }
         return sharedSingleton;
     }
@@ -47,7 +49,7 @@
         
         NSMutableArray *orders = [decoder objectWithData:jsonList error:nil];
         
-        //NSLog(@"Orders: %@", orders);
+        NSLog(@"Orders: %@", orders);
         
         [[ConnectionManager shareInstance].orderQueue removeAllObjects];
         
@@ -64,6 +66,8 @@
             [o setFulfilledAt:(NSDate *)[[orders objectAtIndex:i] objectForKey:@"fulfilled"]];
             [o setPersonID:(NSString *)[[orders objectAtIndex:i] objectForKey:@"person_id"]];
             [o setOrderItem:(NSString *)[[orders objectAtIndex:i] objectForKey:@"item"]];
+            [o setMilkOption:(NSString *)[[orders objectAtIndex:i] objectForKey:@"milk"]];
+            [o setPriority:(NSString *)[[orders objectAtIndex:i] objectForKey:@"priority"]];
             [o setSpecialInstructions:(NSString *)[[orders objectAtIndex:i] objectForKey:@"special_instructions"]];
             
             [[ConnectionManager shareInstance].orderQueue addObject:o];
@@ -97,7 +101,7 @@
                        
                        dispatch_async(dispatch_get_main_queue(), ^
                                       {
-                                          [[NSNotificationCenter defaultCenter] postNotificationName:@"StoreStatusLoaded" object:nil userInfo:nil];
+                                          [[NSNotificationCenter defaultCenter] postNotificationName:@"StatusLoaded" object:nil userInfo:nil];
                                       });
                    });
 }
@@ -129,18 +133,27 @@
         JSONDecoder *decoder = [JSONDecoder decoderWithParseOptions:JKParseOptionStrict];
         NSData *jsonList = [jsonData copy];
         
-        [ConnectionManager shareInstance].storeStatus = [decoder objectWithData:jsonList error:nil];
+        NSDictionary *newStatus = [decoder objectWithData:jsonList error:nil];
+        NSString *oldStatus = [ConnectionManager shareInstance].storeStatus;
         
+        //NSLog(@"status? %@", [newStatus objectForKey:@"value"]);
+        [ConnectionManager shareInstance].storeStatus =[newStatus objectForKey:@"value"];
         
         dispatch_async(dispatch_get_main_queue(), ^
         {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"StatusUpdated" object:nil];
+            if( [[ConnectionManager shareInstance].storeStatus isEqualToString:statusOpen ] && [oldStatus isEqualToString:statusClose])
+            {
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"StatusFirstOpened" object:nil];
+            }
+            
+            else [[NSNotificationCenter defaultCenter] postNotificationName:@"StatusUpdated" object:nil];
         });
     });
 }
 
 + (void)completeOrder:(NSString *)withID
 {
+    [ConnectionManager shareInstance].isWritingToService = YES;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
     {
         NSString *urlAddress = [NSString stringWithFormat:@"%@/%@/%@/complete.json", dataServiceBase, ordersUrl, withID];
@@ -158,6 +171,7 @@
                        
         dispatch_async(dispatch_get_main_queue(), ^
         {
+            [ConnectionManager shareInstance].isWritingToService = NO;
             [[NSNotificationCenter defaultCenter] postNotificationName:@"OrderFulfilled" object:nil userInfo:returnedData];
         });
     });

@@ -21,8 +21,10 @@
 @property (nonatomic, strong) IBOutlet UILabel *nameLabel;
 @property (nonatomic, strong) IBOutlet UILabel *itemLabel;
 @property (nonatomic, strong) IBOutlet UIButton *notesButton;
+@property (nonatomic, strong) IBOutlet UIImageView *priority;
 
 @property (nonatomic, strong) Order *thisOrder;
+@property (nonatomic) int queuePosition;
 
 - (IBAction)drinkComplete:(id)sender;
 - (IBAction)drinkFlag:(id)sender;

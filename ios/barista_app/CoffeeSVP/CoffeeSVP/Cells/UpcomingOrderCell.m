@@ -11,7 +11,15 @@
 
 @implementation UpcomingOrderCell
 
-@synthesize thisOrder;
+@synthesize thisOrder, queuePosition;
+
+- (void)awakeFromNib
+{
+}
+
+- (void)prepareForReuse
+{
+}
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -70,6 +78,7 @@
         if(buttonIndex == 0)
         {
             [ConnectionManager completeOrder:[thisOrder orderID]];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"CellOrderCompleted" object:nil userInfo:[[NSDictionary alloc] initWithObjectsAndKeys: self, @"row", nil]];
         }
     }
     

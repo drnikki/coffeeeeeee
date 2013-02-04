@@ -7,6 +7,7 @@
 //
 
 #import "QueueViewController.h"
+#import "AppUtilities.h"
 #import "ConnectionManager.h"
 #import "Order.h"
 #import "UpcomingOrderCell.h"
@@ -43,10 +44,14 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCellNotesLoaded:) name:@"CellNotesClicked" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCellOrderCompleted:) name:@"CellOrderCompleted" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onCellOrderFlagged:) name:@"CellOrderFlagged" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onStatusUpdated:) name:@"StatusUpdated" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onStatusLoaded:) name:@"StatusLoaded" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onStatusFirstOpened:) name:@"StatusFirstOpened" object:nil];
     
     [self initNeedle];
     [self initDynamicGaugeValues];
-    //[self initNotesView];
+    [self initQueueElements];
+    [self initSoundEffects];
     
     if (!self.loopTimer)
     {
@@ -60,7 +65,6 @@
         self.loopTimer = [NSTimer scheduledTimerWithTimeInterval:8.0 target:self selector:@selector(loadQueue) userInfo: nil repeats:NO];
         [[NSRunLoop currentRunLoop] addTimer:self.loopTimer forMode:NSRunLoopCommonModes];
     }
-    //[self loadQueue];
     
     if(![self.prefs boolForKey:@"queueViewLoaded"])
     {
@@ -69,13 +73,25 @@
         
     }
     
-    else
-    {
-        [self setStage];
-    }
+    else [self setStage];
+    
     
     NSLog(@"View Did Load");
     
+}
+
+- (void)initQueueElements
+{
+    //hide everything until we know the store status
+    [self.currentOrderView setHidden:YES];
+    //[self.upcomingOrderFeed setHidden:YES];
+    [self.queueEmptyView setHidden:YES];
+    [self.mustOpenView setHidden:YES];
+}
+
+- (void)initSoundEffects
+{
+    self.soundEffect = [[SoundEffect alloc] init];
 }
 
 - (void)setStage
@@ -84,11 +100,12 @@
     totalRotation = [self.prefs floatForKey:@"needleRotation"];
     warningAlpha = [self.prefs floatForKey:@"needleAlpha"];
     
-    NSLog(@"prefs: %f", totalRotation);
+    //NSLog(@"prefs: %f", totalRotation);
     
     self.dynamicNeedleView.transform = CGAffineTransformRotate(self.dynamicNeedleView.transform,totalRotation);
     self.dynamicNeedleBusy.alpha = warningAlpha;
 }
+
 - (void)initNeedle
 {
     
@@ -308,34 +325,67 @@
 
 - (IBAction)viewNote:(id)sender
 {
-    NSLog(@"View Note");
-    
     [self.delegate updateNotesView:[[ConnectionManager shareInstance].orderQueue objectAtIndex:0]];
 }
 
 -(void)onOrderQueueLoaded:(NSNotification *)notification
 {
-    /*
-    if (!self.loadingView.hidden)
-        [UIView animateWithDuration:1.0 delay:0.0 options: UIViewAnimationCurveEaseOut
-                         animations:^{
-                             self.loadingView.alpha = 0.0;
-                         }
-                         completion:^(BOOL finished){
-                             self.loadingView.hidden = YES;
-                         }];
-    */
-    //[self.parentViewController showLoadingView:NO];
-    
-    
     [self.delegate showLoadingView:NO];
     
-    [self updateQueue];
+    if( ![ConnectionManager shareInstance].isWritingToService )[self updateQueue];
     
     [self.loopTimer invalidate];
     self.loopTimer = nil;
     self.loopTimer = [NSTimer scheduledTimerWithTimeInterval:8.0 target:self selector:@selector(loadQueue) userInfo: nil repeats:NO];
     
+}
+
+- (void)onStatusLoaded:(NSNotification *)notification
+{
+    if( [AppUtilities storeIsClosed] )
+    {
+        [self.currentOrderView setHidden:YES];
+        //[self.upcomingOrderFeed setHidden:YES];
+        [self.queueEmptyView setHidden:YES];
+        [self.mustOpenView setHidden:NO];
+    }
+    
+    else if( [AppUtilities storeIsOpen] )
+    {
+        [self.mustOpenView setHidden:YES];
+        [self loadQueue];
+    }
+}
+
+- (void)onStatusUpdated:(NSNotification *)notification
+{
+    if( [AppUtilities storeIsOpen] )
+    {
+        [self.mustOpenView setHidden:YES];
+        [self updateQueue];
+    }
+    
+    else if( [AppUtilities storeIsClosed] )
+    {
+        [self.currentOrderView setHidden:YES];
+        //[self.upcomingOrderFeed setHidden:YES];
+        [self.queueEmptyView setHidden:YES];
+        [self.mustOpenView setHidden:NO];
+        
+        [self.loopTimer invalidate];
+        self.loopTimer = nil;
+        //gut queue?
+    }
+}
+
+-(void)onStatusFirstOpened:(NSNotification *)notification
+{
+    [self.currentOrderView setHidden:YES];
+    //[self.upcomingOrderFeed setHidden:NO];
+    [self.queueEmptyView setHidden:YES];
+    [self.mustOpenView setHidden:YES];
+    
+    [self loadQueue];
 }
 
 -(void)updateQueue
@@ -380,7 +430,10 @@
     if([current personID] != (NSString *)[NSNull null]) [self currentName].text = [current personID];
     else [self currentName].text = @"No Name";
         
-    [self currentOrder].text = [current orderItem];
+    [self currentOrder].text = [NSString stringWithFormat:@"%@ %@", [current milkOption], [current orderItem]];
+    
+    if([current priority] == (NSString *)[NSNull null]) self.currentPriority.hidden = YES;
+    else self.currentPriority.hidden = NO;
     
     if([current specialInstructions] == (NSString *)[NSNull null] || [[current specialInstructions] isEqualToString:@""] ) [self notesButton].hidden = YES;
     else [self notesButton].hidden = NO;
@@ -388,9 +441,14 @@
 
 -(void) updateQueueTotal
 {
-    
+    //ding if we have new ones
+    int oldCount = [self.queueTotal.text intValue];
     if([[ConnectionManager shareInstance].orderQueue count] >= 10) [self.queueTotal setText:[NSString stringWithFormat:@"%u", [[ConnectionManager shareInstance].orderQueue count]]];
     else [self.queueTotal setText:[NSString stringWithFormat:@"0%u", [[ConnectionManager shareInstance].orderQueue count]]];
+    
+    if([self.queueTotal.text intValue] > oldCount) [self.soundEffect newOrderSound];
+    
+    //NSLog(@"old: %i, new: %i", oldCount, (int)self.queueTotal.text);
 }
 
 //Table View functions
@@ -425,12 +483,14 @@
     if([o personID] != (NSString *)[NSNull null]) cell.nameLabel.text = [o personID];
     else cell.nameLabel.text = @"No Name";
     
-    if([o orderItem] != (NSString *)[NSNull null]) cell.itemLabel.text = [o orderItem];
+    if([o orderItem] != (NSString *)[NSNull null]) cell.itemLabel.text = [NSString stringWithFormat:@"%@ %@", [o milkOption], [o orderItem]];
     else cell.itemLabel.text = @"Invalid Order";
     
     if([o specialInstructions] == (NSString *)[NSNull null] || [[o specialInstructions] isEqualToString:@""]) cell.notesButton.hidden = YES;
     else cell.notesButton.hidden = NO;
     
+    if([o priority] == (NSString *)[NSNull null]) cell.priority.hidden = YES;
+    else cell.priority.hidden = NO;
     [cell setThisOrder:o];
     [cell setQueuePosition:indexPath.row+1];
     
@@ -472,6 +532,9 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellNotesClicked" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderCompleted" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderFlagged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusUpdated" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusLoaded" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusFirstOpened" object:nil];
 }
 
 - (void)dealloc
@@ -486,6 +549,9 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellNotesClicked" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderCompleted" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderFlagged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusUpdated" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusLoaded" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"StatusFirstOpened" object:nil];
 }
 
 @end

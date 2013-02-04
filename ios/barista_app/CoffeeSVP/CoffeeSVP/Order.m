@@ -10,6 +10,4 @@
 
 @implementation Order
 
-@synthesize orderID, createdAt, fulfilledAt, orderItem, personID, placedAt, specialInstructions, updatedAt;
-
 @end

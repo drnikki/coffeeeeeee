@@ -8,9 +8,21 @@
 
 #import <Foundation/Foundation.h>
 
+//store statuses
 #define statusOpen @"open"
 #define statusClose @"closed"
 #define statusBreak @"on_break"
+
+//tab slugs
+#define orderSlug @"order"
+#define statusSlug @"status"
+#define historySlug @"history"
+#define glossarySlug @"glossary"
+#define gallerySlug @"gallery"
+
+//keyboard offset
+#define kOFFSET_FOR_KEYBOARD 80.0f
+
 
 @interface AppUtilities : NSObject
 

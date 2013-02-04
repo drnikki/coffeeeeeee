@@ -28,61 +28,50 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
-    [self initVerticalTabButtons];
+    [self initObservers];
+    [self initVerticalTabNav];
+    [self initLoadingView];
     
     [self loadTabView:orderSlug];
-    
     [self loadMenu];
 }
 
-- (void)initVerticalTabButtons
+- (void)initObservers
 {
-    self.orderButton = [[ToggleView alloc] initWithFrame:CGRectMake(verticalTabX0, verticalTabY0, verticalTabWidth, verticalTabHeight)];
-    [self.orderButton setOnImage:@"btn_order_on.png"];
-    [self.orderButton setOffImage:@"btn_order_off.png"];
-    [self.orderButton setOn:YES];
-    [self.orderButton setBackgroundColor:[UIColor clearColor]];
-    [self.view addSubview:self.orderButton];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onTabClicked:) name:@"TabNavClicked" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMenuItemsLoaded:) name:@"MenuItemsLoaded" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMilkOptionsLoaded:) name:@"MilkOptionsLoaded" object:nil];
+}
+
+- (void)initVerticalTabNav
+{
+    [self.tabsNavView initVerticalTabButtons];
+}
+
+- (void)initLoadingView
+{
+    UIStoryboard* mainStoryboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
+    self.loadingViewController = [mainStoryboard instantiateViewControllerWithIdentifier:@"loadingView"];
     
-    self.statusButton = [[ToggleView alloc] initWithFrame:CGRectMake(verticalTabX0, verticalTabY0 + verticalTabHeight, verticalTabWidth, verticalTabHeight)];
-    [self.statusButton setOnImage:@"btn_status_on.png"];
-    [self.statusButton setOffImage:@"btn_status_off.png"];
-    [self.statusButton setOn:NO];
-    [self.statusButton setBackgroundColor:[UIColor clearColor]];
-    [self.view addSubview:self.statusButton];
+    [self.view addSubview:self.loadingViewController.view];
     
-    self.historyButton = [[ToggleView alloc] initWithFrame:CGRectMake(verticalTabX0, verticalTabY0 + verticalTabHeight*2, verticalTabWidth, verticalTabHeight)];
-    [self.historyButton setOnImage:@"btn_history_on.png"];
-    [self.historyButton setOffImage:@"btn_history_off.png"];
-    [self.historyButton setOn:NO];
-    [self.historyButton setBackgroundColor:[UIColor clearColor]];
-    [self.view addSubview:self.historyButton];
-    
-    self.glossaryButton = [[ToggleView alloc] initWithFrame:CGRectMake(verticalTabX0, verticalTabY0 + verticalTabHeight*3, verticalTabWidth, verticalTabHeight)];
-    [self.glossaryButton setOnImage:@"btn_glossary_on.png"];
-    [self.glossaryButton setOffImage:@"btn_glossary_off.png"];
-    [self.glossaryButton setOn:NO];
-    [self.glossaryButton setBackgroundColor:[UIColor clearColor]];
-    [self.view addSubview:self.glossaryButton];
-    
-    self.galleryButton = [[ToggleView alloc] initWithFrame:CGRectMake(verticalTabX0, verticalTabY0 + verticalTabHeight*4, verticalTabWidth, verticalTabHeight)];
-    [self.galleryButton setOnImage:@"btn_gallery_on.png"];
-    [self.galleryButton setOffImage:@"btn_gallery_off.png"];
-    [self.galleryButton setOn:NO];
-    [self.galleryButton setBackgroundColor:[UIColor clearColor]];
-    [self.view addSubview:self.galleryButton];
-    
-    UITapGestureRecognizer *orderGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabOrderClick:)];
-    UITapGestureRecognizer *statusGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabStatusClick:)];
-    UITapGestureRecognizer *historyGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabHistoryClick:)];
-    UITapGestureRecognizer *glossaryGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabGlossaryClick:)];
-    UITapGestureRecognizer *galleryGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tabGalleryClick:)];
-    
-    [self.orderButton addGestureRecognizer:orderGR];
-    [self.statusButton addGestureRecognizer:statusGR];
-    [self.historyButton addGestureRecognizer:historyGR];
-    [self.glossaryButton addGestureRecognizer:glossaryGR];
-    [self.galleryButton addGestureRecognizer:galleryGR];
+    self.loadingViewController.view.hidden = YES;
+}
+
+- (void)onTabClicked:(NSNotification *)notification
+{
+    [self loadTabView:[notification.userInfo objectForKey:@"tabSlug"]];
+}
+
+- (void)onMenuItemsLoaded:(NSNotification *)notification
+{
+    //now we load the milk options
+    [ConnectionManager getMilkOptions];
+}
+
+- (void)onMilkOptionsLoaded:(NSNotification *)notification
+{
+    [self showLoadingView:NO];
 }
 
 - (void)loadTabView:(NSString *)tabName
@@ -144,76 +133,48 @@
     
 }
 
+- (void)showLoadingView:(BOOL)on withLabel:(NSString *)label
+{
+    if(![label isEqualToString:@""]) [self.loadingViewController.loadingLabel setText:label];
+    
+    if(on)
+    {
+        //NSLog(@"SHOW ME SHOW ME SHOW ME!");
+        self.loadingViewController.view.hidden = NO;
+        self.loadingViewController.view.alpha = 1.0f;
+    }
+    
+    else
+    {
+        //NSLog(@"HIDE ME HIDE ME HIDE ME");
+        if (!self.loadingViewController.view.hidden)
+            [UIView animateWithDuration:1.0 delay:0.0 options: UIViewAnimationCurveEaseOut
+                             animations:^{
+                                 self.loadingViewController.view.alpha = 0.0;
+                             }
+                             completion:^(BOOL finished){
+                                 self.loadingViewController.view.hidden = YES;
+                             }];
+    }
+}
+
+- (void)showLoadingView:(BOOL)on
+{
+    [self showLoadingView:on withLabel:@""];
+}
+
 - (void)loadMenu
 {
+    [self showLoadingView:YES withLabel:@"One moment please. Loading the menu..."];
     [ConnectionManager getMenuItems];
 }
 
-- (void)tabOrderClick:(id)sender
+- (void) viewDidUnload
 {
-    if( self.orderButton.on) return;
-    
-    [self.orderButton setOn:YES];
-    [self.statusButton setOn:NO];
-    [self.historyButton setOn:NO];
-    [self.glossaryButton setOn:NO];
-    [self.galleryButton setOn:NO];
-    
-    [self loadTabView:orderSlug];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"TabNavClicked" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"MenuItemsLoaded" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"MilkOptionsLoaded" object:nil];
 }
-
-- (void)tabStatusClick:(id)sender
-{
-    if( self.statusButton.on) return;
-    
-    [self.orderButton setOn:NO];
-    [self.statusButton setOn:YES];
-    [self.historyButton setOn:NO];
-    [self.glossaryButton setOn:NO];
-    [self.galleryButton setOn:NO];
-    
-    [self loadTabView:statusSlug];
-}
-
-- (void)tabHistoryClick:(id)sender
-{
-    if( self.historyButton.on) return;
-    
-    [self.orderButton setOn:NO];
-    [self.statusButton setOn:NO];
-    [self.historyButton setOn:YES];
-    [self.glossaryButton setOn:NO];
-    [self.galleryButton setOn:NO];
-    
-    [self loadTabView:historySlug];
-}
-
-- (void)tabGlossaryClick:(id)sender
-{
-    if( self.glossaryButton.on) return;
-    
-    [self.orderButton setOn:NO];
-    [self.statusButton setOn:NO];
-    [self.historyButton setOn:NO];
-    [self.glossaryButton setOn:YES];
-    [self.galleryButton setOn:NO];
-    
-    [self loadTabView:glossarySlug];
-}
-
-- (void)tabGalleryClick:(id)sender
-{
-    if( self.galleryButton.on) return;
-    
-    [self.orderButton setOn:NO];
-    [self.statusButton setOn:NO];
-    [self.historyButton setOn:NO];
-    [self.glossaryButton setOn:NO];
-    [self.galleryButton setOn:YES];
-    
-    [self loadTabView:gallerySlug];
-}
-
 
 - (void)didReceiveMemoryWarning
 {

@@ -23,7 +23,7 @@
             sharedSingleton = [[InstagramManager alloc] init];
             
             sharedSingleton.taggedPhotos = [[NSMutableArray alloc] init];
-            sharedSingleton.hashTag = @"sun";
+            sharedSingleton.hashTag = @"lbi_coffee";
         }
         return sharedSingleton;
     }

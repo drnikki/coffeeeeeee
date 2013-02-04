@@ -32,9 +32,10 @@
 {
     
     self.thumbImage = [[UIImageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 160.0f, 160.0f)];
+    
     [self.thumbImage setImageWithURL:[NSURL URLWithString:[self.data thumbUrl]] placeholderImage:[UIImage imageNamed:@"gallery_image_default.png"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType) {
-        [self.thumbImage setAlpha:0.0f];
         
+        [self.thumbImage setAlpha:0.0f];
         [UIView animateWithDuration:0.6 delay:0.0 options: UIViewAnimationCurveEaseOut
                          animations:^{
                              self.thumbImage.alpha = 1.0f;
