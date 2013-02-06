@@ -18,7 +18,9 @@ class OrdersController < ApplicationController
     # if the order is incomplete, we need to return the order's
     # place in the queue and the approximate wait time.
     # adding one to this so it's not zero based, for the people.
-    if @order.fulfilled.nil?
+    if @order.in_queue
+      # also, the order being nil could mean that it wasn't fulfilled yesterday.... so we need to check to see if it's in_queue
+
       #DEPRECATION WARNING: You're trying to create an attribute `queue_place'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from show at /var/www/coffee/releases/20130201212912/app/controllers/orders_controller.rb:22)
       #DEPRECATION WARNING: You're trying to create an attribute `wait_time'. Writing arbitrary attributes on a model is deprecated. Please just use `attr_writer` etc. (called from show at /var/www/coffee/releases/20130201212912/app/controllers/orders_controller.rb:23)
       @order[:queue_total] = @order.get_queue_total 
