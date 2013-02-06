@@ -16,6 +16,7 @@ class Order < ActiveRecord::Base
   end
 
   def get_queue_place(order)
+    # must take priority into account.
     Order.where('fulfilled IS NULL AND placed <= ? AND created_at > ?', order.placed, Time.zone.now.beginning_of_day).count 
   end
 
@@ -29,10 +30,7 @@ class Order < ActiveRecord::Base
 
   # on the model object itself.
   def self.get_queue_orders
-    Order.where('fulfilled IS NULL AND created_at > ?', Time.zone.now.beginning_of_day)
+    Order.where('fulfilled IS NULL AND created_at > ?', Time.zone.now.beginning_of_day).order("priority DESC, created_at ASC")
   end
-
-
-
 
 end
