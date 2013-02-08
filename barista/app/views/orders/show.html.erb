@@ -30,6 +30,11 @@
   <%= @order.special_instructions %>
 </p>
 
+<p>
+  <b>Priority:</b>
+  <%= @order.priority %>
+</p>
+
 
 <%= link_to 'Edit', edit_order_path(@order) %> |
 <%= link_to 'Back', orders_path %>

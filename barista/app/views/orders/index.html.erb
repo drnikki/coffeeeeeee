@@ -2,6 +2,7 @@
 
 <table>
   <tr>
+    <th>Priority</th>
     <th>Item</th>
     <th>Placed</th>
     <th>Fulfilled</th>
@@ -13,6 +14,7 @@
 
 <% @orders.each do |order| %>
   <tr>
+    <td><%= order.priority %></td>
     <td><%= order.item %></td>
     <td><%= order.placed %></td>
     <td><%= order.fulfilled %></td>
