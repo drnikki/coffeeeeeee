@@ -23,13 +23,14 @@
 //keyboard offset
 #define kOFFSET_FOR_KEYBOARD 80.0f
 
+//user prefs slugs
+#define currentQueueTotal @"queueTotal"
+#define openOrders @"openOrderDetails"
+#define statusViewLoaded @"statusViewLoaded"
+
 
 @interface AppUtilities : NSObject
 
 +(void)slideOutTop:(UIView *)view;
-/*
-+ (BOOL)storeIsOpen;
-+ (BOOL)storeIsClosed;
-+ (BOOL)storeIsOnBreak;
-*/
+
 @end

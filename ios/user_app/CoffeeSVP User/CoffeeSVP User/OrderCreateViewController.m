@@ -26,6 +26,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    self.prefs = [NSUserDefaults standardUserDefaults];
+    
 	// Do any additional setup after loading the view.
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -46,9 +49,13 @@
     [self.milkPickerInputField addGestureRecognizer:milkGR];
     
     [self initPickers];
+    [self initObservers];
+    
     //set delegates
     [self.specialInstructionsField setDelegate:self];
     [self.nameField setDelegate:self];
+    
+    [self.orderConfirmView showView:NO];
 }
 
 -(void)keyboardWillShow {
@@ -59,6 +66,12 @@
 
 -(void)keyboardWillHide {
    [self setViewMovedUp:NO];
+}
+
+-(void)initObservers
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onOrderSubmitted:) name:@"OrderSubmitted" object:nil];
+
 }
 
 -(void)initPickers
@@ -79,7 +92,7 @@
     keyboardItemDoneButtonView.tintColor = nil;
     [keyboardItemDoneButtonView sizeToFit];
     
-    UIBarButtonItem* doneItemButton = [[UIBarButtonItem alloc] initWithTitle:@"Select this drink"
+    UIBarButtonItem* doneItemButton = [[UIBarButtonItem alloc] initWithTitle:@"Select this item"
                                                                    style:UIBarButtonItemStyleBordered target:self
                                                                   action:@selector(itemPickerDoneClicked:)];
     
@@ -107,7 +120,7 @@
     keyboardMilkDoneButtonView.tintColor = nil;
     [keyboardMilkDoneButtonView sizeToFit];
     
-    UIBarButtonItem* doneMilkButton = [[UIBarButtonItem alloc] initWithTitle:@"Select this milk"
+    UIBarButtonItem* doneMilkButton = [[UIBarButtonItem alloc] initWithTitle:@"Select this option"
                                                                        style:UIBarButtonItemStyleBordered target:self
                                                                       action:@selector(milkPickerDoneClicked:)];
     
@@ -205,6 +218,7 @@
     //close keyboard if it's open
     [self.view endEditing:YES];
     [self setPickerViewMovedUp:YES forView:self.customItemPickerView];
+    [self.itemPickerInputField setText:[self pickerView:self.itemPickerView titleForRow:[self.itemPickerView selectedRowInComponent:0] forComponent:0]];
     
     [self setPickerViewMovedUp:NO forView:self.customMilkPickerView];
     
@@ -221,6 +235,7 @@
     //close keyboard if it's open
     [self.view endEditing:YES];
     [self setPickerViewMovedUp:YES forView:self.customMilkPickerView];
+    [self.milkPickerInputField setText:[self pickerView:self.milkPickerView titleForRow:[self.milkPickerView selectedRowInComponent:0] forComponent:0]];
     
     [self setPickerViewMovedUp:NO forView:self.customItemPickerView];
 }
@@ -262,7 +277,8 @@
 
 - (IBAction)createOrder:(id)sender
 {
-   [ConnectionManager submitNewOrder:self.nameField.text withItem:self.itemPickerInputField.text andMilk:self.milkPickerInputField.text andSpecialInstructions:self.specialInstructionsField.text];
+    [ConnectionManager submitNewOrder:self.nameField.text withItem:self.itemPickerInputField.text andMilk:self.milkPickerInputField.text andSpecialInstructions:self.specialInstructionsField.text];
+    [(OrderViewController *)self.parentViewController submitOrder:YES];
 }
 
 - (void)itemPickerDoneClicked:(id)sender
@@ -279,6 +295,53 @@
     [self setPickerViewMovedUp:NO forView:self.customMilkPickerView];
 }
 
+- (void)onOrderSubmitted:(NSNotification *)notification
+{
+    //turn off loading
+    [(OrderViewController *)self.parentViewController submitOrder:NO];
+    
+    //update open order dictionary with new order
+    OpenOrder *o = [[OpenOrder alloc] init];
+    
+    [o setOrderId:[[notification.userInfo objectForKey:@"id"] intValue]];
+    [o setPersonId:[notification.userInfo objectForKey:@"person_id"]];
+    [o setOrderItem:[NSString stringWithFormat:@"%@ %@", [notification.userInfo objectForKey:@"milk"], [notification.userInfo objectForKey:@"item"]]];
+    [o setOrderNotes:[notification.userInfo objectForKey:@"special_instructions"]];
+    [o setQueuePlace:[[notification.userInfo objectForKey:@"queue_place"] intValue]];
+    [o setWaitTime:[[notification.userInfo objectForKey:@"wait_time"] floatValue]];
+    [o setOrderDate:[NSDate date]];
+    [[ConnectionManager shareInstance].openOrderDetails addObject:o];
+    
+    [ConnectionManager shareInstance].queueTotal = [[notification.userInfo objectForKey:@"queue_total"] intValue];
+    
+    //push the total to prefs
+    [self.prefs setInteger:[ConnectionManager shareInstance].queueTotal forKey:currentQueueTotal];
+    
+    NSMutableArray *updatedOrders = [self retrieveStoredOrders];
+    
+    [updatedOrders addObject:o];
+    
+    [self.prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:[ConnectionManager shareInstance].openOrderDetails] forKey:openOrders];
+    
+    //show and fill order complete screen
+    [self.orderConfirmView showView:YES withData:o];
+}
+
+- (NSMutableArray *)retrieveStoredOrders
+{
+    NSData *dataRepresentingSavedArray = [self.prefs objectForKey:openOrders];
+    if (dataRepresentingSavedArray != nil)
+    {
+        NSArray *oldSavedArray = [NSKeyedUnarchiver unarchiveObjectWithData:dataRepresentingSavedArray];
+        if (oldSavedArray != nil)
+            return [[NSMutableArray alloc] initWithArray:oldSavedArray];
+        else
+            return [[NSMutableArray alloc] init];
+    }
+    
+    else return [[NSMutableArray alloc] init];
+}
+
 - (void)viewDidUnload
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self
@@ -288,16 +351,52 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:UIKeyboardWillHideNotification
                                                   object:nil];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"OrderSubmitted" object:nil];
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIKeyboardWillShowNotification
+                                                  object:nil];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIKeyboardWillHideNotification
+                                                  object:nil];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"OrderSubmitted" object:nil];
+}
+
+- (void)resetOrderCreateView
+{
+    [self.itemPickerView selectRow:0 inComponent:0 animated:NO];
+    [self.milkPickerView selectRow:0 inComponent:0 animated:NO];
+    
+    [self.itemPickerInputField setText:@""];
+    [self.milkPickerInputField setText:@""];
+    
+    [self.specialInstructionsField setText:@""];
+    [self.nameField setText:@""];
 }
 
 - (IBAction)resignResponders:(id)sender
 {
     [self.view endEditing:YES];
-    //[self.specialInstructionsField resignFirstResponder];
-    //[self.nameField resignFirstResponder];
-    
     [self setPickerViewMovedUp:NO forView:self.customItemPickerView];
+    [self setPickerViewMovedUp:NO forView:self.customMilkPickerView];
     
+}
+
+- (IBAction)createAnotherOrder:(id)sender
+{
+    [self resetOrderCreateView];
+    [self.orderConfirmView showView:NO];
+}
+
+-(IBAction)goToStatus:(id)sender
+{
+    [(OrderViewController *)self.parentViewController goToTab:statusSlug];
 }
 
 - (void)didReceiveMemoryWarning

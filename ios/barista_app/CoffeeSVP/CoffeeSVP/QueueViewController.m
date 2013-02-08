@@ -528,6 +528,12 @@
     
     NSLog(@"View Did Unload");
     
+    if (self.loopTimer)
+    {
+        [self.loopTimer invalidate];
+        self.loopTimer = nil;
+    }
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"OrderQueueLoaded" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellNotesClicked" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"CellOrderCompleted" object:nil];

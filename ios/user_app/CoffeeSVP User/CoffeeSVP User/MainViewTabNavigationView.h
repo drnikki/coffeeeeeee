@@ -25,4 +25,10 @@
 
 - (void)initVerticalTabButtons;
 
+- (void)tabOrderClick:(id)sender;
+- (void)tabStatusClick:(id)sender;
+- (void)tabHistoryClick:(id)sender;
+- (void)tabGlossaryClick:(id)sender;
+- (void)tabGalleryClick:(id)sender;
+
 @end

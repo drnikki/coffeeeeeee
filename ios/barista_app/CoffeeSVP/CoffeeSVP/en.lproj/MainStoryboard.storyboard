@@ -578,7 +578,18 @@
                             </view>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="gauge_bg.png" translatesAutoresizingMaskIntoConstraints="NO" id="SBy-KB-AoS"/>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Crr-Gg-6vz">
+                                <subviews>
+                                    <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="B3n-JT-L2B">
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                    </view>
+                                </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstItem="B3n-JT-L2B" firstAttribute="leading" secondItem="Crr-Gg-6vz" secondAttribute="leading" constant="195" id="LPt-Yt-E3L"/>
+                                    <constraint firstAttribute="bottom" secondItem="B3n-JT-L2B" secondAttribute="bottom" constant="-29" id="PCa-ou-8s2"/>
+                                    <constraint firstItem="B3n-JT-L2B" firstAttribute="top" secondItem="Crr-Gg-6vz" secondAttribute="top" constant="5" id="bgI-dG-4YD"/>
+                                    <constraint firstItem="B3n-JT-L2B" firstAttribute="centerX" secondItem="Crr-Gg-6vz" secondAttribute="centerX" type="default" id="ite-rZ-Y9B"/>
+                                </constraints>
                             </view>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="divider_tab_pages.png" translatesAutoresizingMaskIntoConstraints="NO" id="xeu-3J-nC6"/>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="My Queue" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="V8f-VW-aWa">
@@ -602,9 +613,6 @@
                                     <action selector="gaugeUp:" destination="HPa-yL-Mib" eventType="touchUpInside" id="OzW-X0-Ii5"/>
                                 </connections>
                             </button>
-                            <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="B3n-JT-L2B">
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </view>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="barista_gauge_logo.png" translatesAutoresizingMaskIntoConstraints="NO" id="DBn-mn-bCY"/>
                             <button opaque="NO" contentMode="scaleToFill" restorationIdentifier="buttonDown" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9of-J0-GM7">
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
@@ -850,7 +858,6 @@
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="T2i-wF-mpO" secondAttribute="bottom" constant="308" id="26J-Gb-ktS"/>
                             <constraint firstItem="V8f-VW-aWa" firstAttribute="top" secondItem="eWN-V2-5WW" secondAttribute="top" constant="33" id="2QP-dn-7kl"/>
-                            <constraint firstItem="B3n-JT-L2B" firstAttribute="leading" secondItem="eWN-V2-5WW" secondAttribute="leading" constant="197" id="2RD-GN-pgg"/>
                             <constraint firstItem="qNn-th-rqW" firstAttribute="leading" secondItem="eWN-V2-5WW" secondAttribute="leading" constant="462" id="3Cr-bl-zOM"/>
                             <constraint firstItem="SBy-KB-AoS" firstAttribute="leading" secondItem="eWN-V2-5WW" secondAttribute="leading" type="default" id="4BZ-ba-nN0"/>
                             <constraint firstItem="ABQ-wJ-ytl" firstAttribute="top" secondItem="eWN-V2-5WW" secondAttribute="top" type="default" id="4ur-EE-fGW"/>
@@ -860,7 +867,6 @@
                             <constraint firstItem="9of-J0-GM7" firstAttribute="leading" secondItem="eWN-V2-5WW" secondAttribute="leading" constant="66" id="KQv-mg-GxW"/>
                             <constraint firstItem="DBn-mn-bCY" firstAttribute="centerX" secondItem="YsA-GS-Hg8" secondAttribute="centerX" type="default" id="Kf7-4X-KC4"/>
                             <constraint firstItem="qNn-th-rqW" firstAttribute="bottom" secondItem="V8f-VW-aWa" secondAttribute="bottom" type="default" id="LZD-dF-4Pv"/>
-                            <constraint firstItem="B3n-JT-L2B" firstAttribute="top" secondItem="eWN-V2-5WW" secondAttribute="top" constant="147" id="MO8-eb-Wa4"/>
                             <constraint firstItem="Crr-Gg-6vz" firstAttribute="trailing" secondItem="SBy-KB-AoS" secondAttribute="trailing" type="default" id="SAt-1n-e53"/>
                             <constraint firstItem="SBy-KB-AoS" firstAttribute="top" secondItem="eWN-V2-5WW" secondAttribute="top" constant="142" id="UEU-sq-J29"/>
                             <constraint firstItem="Crr-Gg-6vz" firstAttribute="bottom" secondItem="SBy-KB-AoS" secondAttribute="bottom" type="default" id="VwW-xa-GTj"/>
@@ -876,10 +882,8 @@
                             <constraint firstItem="xFS-qt-ZRb" firstAttribute="centerY" secondItem="1hD-TJ-bMx" secondAttribute="centerY" type="default" id="hXB-gw-fGq"/>
                             <constraint firstItem="1hD-TJ-bMx" firstAttribute="centerX" secondItem="xeu-3J-nC6" secondAttribute="centerX" type="default" id="lvq-dW-9yj"/>
                             <constraint firstItem="T2i-wF-mpO" firstAttribute="leading" secondItem="eWN-V2-5WW" secondAttribute="leading" constant="20" symbolic="YES" type="default" id="m0Q-Nk-h4e"/>
-                            <constraint firstAttribute="bottom" secondItem="B3n-JT-L2B" secondAttribute="bottom" constant="561" id="miS-Oa-org"/>
                             <constraint firstItem="Crr-Gg-6vz" firstAttribute="leading" secondItem="eWN-V2-5WW" secondAttribute="leading" type="default" id="qdu-Cl-mK1"/>
                             <constraint firstItem="tZ2-Vy-PbM" firstAttribute="top" secondItem="9of-J0-GM7" secondAttribute="top" type="default" id="r4N-TU-U17"/>
-                            <constraint firstAttribute="trailing" secondItem="B3n-JT-L2B" secondAttribute="trailing" constant="315" id="sFz-Cs-N7Z"/>
                             <constraint firstItem="qNn-th-rqW" firstAttribute="top" secondItem="V8f-VW-aWa" secondAttribute="top" type="default" id="tpf-tV-gcd"/>
                             <constraint firstItem="T2i-wF-mpO" firstAttribute="trailing" secondItem="qNn-th-rqW" secondAttribute="trailing" type="default" id="vAm-lu-Ftt"/>
                             <constraint firstItem="xFS-qt-ZRb" firstAttribute="leading" secondItem="eWN-V2-5WW" secondAttribute="leading" type="default" id="yPP-Ku-1Vp"/>
@@ -949,6 +953,7 @@
         <class className="GalleryPhotoDetailView" superclassName="UIView">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/GalleryPhotoDetailView.h"/>
             <relationships>
+                <relationship kind="action" name="closeDetail:"/>
                 <relationship kind="outlet" name="detailImage" candidateClass="UIImageView"/>
                 <relationship kind="outlet" name="fullName" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="likeCount" candidateClass="UILabel"/>

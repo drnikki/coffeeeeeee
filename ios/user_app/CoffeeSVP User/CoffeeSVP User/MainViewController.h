@@ -17,9 +17,10 @@
 #import "GalleryViewController.h"
 #import "LoadingViewController.h"
 #import "MainViewTabNavigationView.h"
+#import "OpenOrder.h"
 #import "ToggleView.h"
 
-@interface MainViewController : UIViewController
+@interface MainViewController : UIViewController <OrderViewControllerDelegate, StatusViewControllerDelegate>
 
 @property (strong, nonatomic) OrderViewController *orderViewController;
 @property (strong, nonatomic) StatusViewController *statusViewController;
