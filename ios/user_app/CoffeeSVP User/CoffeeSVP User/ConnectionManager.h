@@ -7,6 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "JSONKit.h"
+#import "AppUtilities.h"
+#import "MenuDrinkItem.h"
+#import "OpenOrder.h"
 
 #define dataServiceBase @"http://172.26.144.34:3002"
 
@@ -21,27 +25,14 @@
 
 @property (strong, nonatomic) NSMutableArray *menuItems;
 @property (strong, nonatomic) NSMutableArray *milkOptions;
+@property (strong, nonatomic) NSMutableArray *openOrderDetails;
+@property (nonatomic) int queueTotal;
 
 + (ConnectionManager *)shareInstance;
-/*
-@property (strong, nonatomic) NSMutableArray *orderQueue;
-@property (strong, nonatomic) NSString *storeStatus;
-@property BOOL queueHasLoaded;
-@property BOOL isWritingToService;
-
-
-
-+ (void)getQueue;
-
-+ (void)getStoreStatus;
-+ (void)updateStoreStatus:(NSString *)withStatus;
-
-+ (void)completeOrder:(NSString *)withID;
-+ (void)flagOrder:(NSString *)withID;
-*/
 
 + (void)getMenuItems;
 + (void)getMilkOptions;
++ (void)getStatuses;
 + (void)submitNewOrder:(NSString *)personId withItem:(NSString *)item andMilk:(NSString *)milk andSpecialInstructions:(NSString *)specialInstructions;
 
 @end

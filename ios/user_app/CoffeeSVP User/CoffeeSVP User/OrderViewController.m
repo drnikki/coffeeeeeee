@@ -14,6 +14,8 @@
 
 @implementation OrderViewController
 
+@synthesize delegate;
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -39,6 +41,17 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+-(void)submitOrder:(BOOL)isSending
+{
+    if(isSending) [self.delegate showLoadingView:YES withLabel:@"Submitting your order..."];
+    else [self.delegate showLoadingView:NO];
+}
+
+- (void)goToTab:(NSString *)slug
+{
+    [self.delegate loadTabView:slug withNavUpdate:YES];
 }
 
 @end

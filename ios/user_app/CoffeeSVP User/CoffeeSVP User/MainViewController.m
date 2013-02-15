@@ -28,12 +28,17 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     
+    self.prefs = [NSUserDefaults standardUserDefaults];
+    
     [self initObservers];
     [self initVerticalTabNav];
     [self initLoadingView];
+    [self initOpenOrderPrefs];
     
     [self loadTabView:orderSlug];
     [self loadMenu];
+    
+    NSLog(@"main view controller load");
 }
 
 - (void)initObservers
@@ -56,6 +61,62 @@
     [self.view addSubview:self.loadingViewController.view];
     
     self.loadingViewController.view.hidden = YES;
+}
+
+- (void)initOpenOrderPrefs
+{
+    NSLog(@"MainViewController:initOpenOrderPrefs()");
+    
+    //check if we have drinks saved
+    if(![self.prefs objectForKey:openOrders]) return;
+    
+    //check orderids in prefs
+    NSMutableArray *orders = [self retrieveStoredOrders];
+    
+    NSLog(@"orders count: %i", [orders count]);
+    
+    //cleanse open orders of yesterday drinks
+    NSCalendar *cal = [NSCalendar currentCalendar];
+    NSDateComponents *todayComps = [cal components:(NSEraCalendarUnit | NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit) fromDate:[NSDate date]];
+    NSDateComponents *orderDayComps;// = [cal components:(NSEraCalendarUnit | NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit) fromDate:[NSDate date]];
+    
+    
+    /////// REMOVE /////////////
+    //[todayComps setDay:-1];
+    ////////////////////////////
+    
+    NSDate *today = [cal dateFromComponents:todayComps];
+    NSDate *orderDay;
+    
+    int i;
+   
+    for( i = 0; i < [orders count]; i++)
+    {
+        orderDayComps = [cal components:(NSEraCalendarUnit | NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit) fromDate:[[orders objectAtIndex:i] orderDate]];
+        orderDay = [cal dateFromComponents:orderDayComps];
+        
+        if(![today isEqualToDate:orderDay]) [orders removeObjectAtIndex:i];
+    }
+    
+    [ConnectionManager shareInstance].openOrderDetails = orders;
+    [self.prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:orders] forKey:openOrders];
+    
+    [ConnectionManager shareInstance].queueTotal = ([self.prefs integerForKey:currentQueueTotal]) ? [self.prefs integerForKey:currentQueueTotal] : 1;
+}
+
+- (NSMutableArray *)retrieveStoredOrders
+{
+    NSData *dataRepresentingSavedArray = [self.prefs objectForKey:openOrders];
+    if (dataRepresentingSavedArray != nil)
+    {
+        NSArray *oldSavedArray = [NSKeyedUnarchiver unarchiveObjectWithData:dataRepresentingSavedArray];
+        if (oldSavedArray != nil)
+            return [[NSMutableArray alloc] initWithArray:oldSavedArray];
+        else
+            return [[NSMutableArray alloc] init];
+    }
+    
+    else return [[NSMutableArray alloc] init];
 }
 
 - (void)onTabClicked:(NSNotification *)notification
@@ -91,6 +152,8 @@
         self.orderViewController.view.frame = newSize;
         self.orderViewController.view.backgroundColor = [UIColor clearColor];
         [self.tabsContainer addSubview:self.orderViewController.view];
+        
+        [self.orderViewController setDelegate:self];
     }
     
     else if([tabName isEqualToString:statusSlug])
@@ -99,6 +162,8 @@
         self.statusViewController.view.frame = newSize;
         self.statusViewController.view.backgroundColor = [UIColor clearColor];
         [self.tabsContainer addSubview:self.statusViewController.view];
+        
+        [self.statusViewController setDelegate:self];
     }
     
     else if([tabName isEqualToString:historySlug])
@@ -129,6 +194,18 @@
         [self.tabsContainer addSubview:self.galleryViewController.view];
         
         
+    }
+    
+}
+
+- (void)loadTabView:(NSString *)tabName withNavUpdate:(BOOL)updateNav
+{
+    [self loadTabView:tabName];
+    
+    if(updateNav)
+    {
+        if([tabName isEqualToString:orderSlug]) [self.tabsNavView tabOrderClick:nil];
+        else if([tabName isEqualToString:statusSlug]) [self.tabsNavView tabStatusClick:nil];
     }
     
 }
@@ -170,6 +247,13 @@
 }
 
 - (void) viewDidUnload
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"TabNavClicked" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"MenuItemsLoaded" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"MilkOptionsLoaded" object:nil];
+}
+
+- (void) dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"TabNavClicked" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"MenuItemsLoaded" object:nil];
