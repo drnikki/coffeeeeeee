@@ -1,5 +1,15 @@
 <h1>Listing orders</h1>
 
+<script type="text/javascript">
+  $(function() {
+    // Barista is the app name
+    window.router = new Barista.Routers.OrdersRouter({orders: <%= @orders.to_json.html_safe -%>});
+    Backbone.history.start();
+  });
+</script>
+
+
+
 <table>
   <tr>
     <th>Priority</th>

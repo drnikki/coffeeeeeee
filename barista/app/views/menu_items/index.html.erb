@@ -1,3 +1,11 @@
+<script type="text/javascript">
+  $(function() {
+    // Blog is the app name
+    window.router = new Blog.Routers.MenuItemsRouter({menu_items: <%= @menu_items.to_json.html_safe -%>});
+    Backbone.history.start();
+  });
+</script>
+
 <h1>Listing menu_items</h1>
 
 <table>

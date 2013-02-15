@@ -1,3 +1,10 @@
+<script type="text/javascript">
+  $(function() {
+    // Blog is the app name
+    window.router = new Blog.Routers.StoreConfigsRouter({store_configs: <%= @store_configs.to_json.html_safe -%>});
+    Backbone.history.start();
+  });
+</script>
 <h1>Listing store_configs</h1>
 
 <table>
