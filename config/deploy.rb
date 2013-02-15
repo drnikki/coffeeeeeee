@@ -3,7 +3,7 @@ set :stages, %w(dev qa prod)
 set :default_stage, "dev" # stay safe!
 require 'capistrano/ext/multistage'
 
-# bundler, bitches, bundler
+# bundler, bro, bundler
 require "bundler/capistrano"
 
 # global application variables
